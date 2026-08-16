@@ -52,6 +52,9 @@ jobs:
       - name: Generate Prisma client
         run: pnpm db:generate
 
+      - name: Build workspace packages
+        run: pnpm --filter @proplanding/shared build && pnpm --filter @proplanding/database build
+
       - name: Run migrations
         run: pnpm --filter @proplanding/database migrate:deploy
 
