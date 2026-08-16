@@ -52,8 +52,11 @@ jobs:
       - name: Generate Prisma client
         run: pnpm db:generate
 
-      - name: Run migrations
-        run: pnpm --filter @proplanding/database migrate:deploy
+      - name: Apply schema
+        run: pnpm --filter @proplanding/database exec prisma db push
+
+      - name: Seed database
+        run: pnpm --filter @proplanding/database seed
 
       - name: Typecheck
         run: pnpm typecheck

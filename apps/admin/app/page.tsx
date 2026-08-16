@@ -1,46 +1,49 @@
-import Link from "next/link";
+"use client";
 
-const navItems = [
-  { href: "/", label: "대시보드" },
-  { href: "/campaigns", label: "캠페인 관리" },
-  { href: "/status", label: "API 상태" },
-];
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/auth";
+import { getDashboard } from "@/lib/api";
+import { AdminShell } from "@/components/AdminShell";
 
 export default function AdminHomePage() {
+  const ready = useAuth();
+  const [stats, setStats] = useState<{
+    campaignCount: number;
+    inquiryCount: number;
+    newInquiries: number;
+    upcomingAppointments: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!ready) return;
+    getDashboard().then(setStats).catch(console.error);
+  }, [ready]);
+
+  if (!ready) return null;
+
   return (
-    <div className="layout">
-      <aside className="sidebar">
-        <p className="logo">Control Tower</p>
-        <nav>
-          <ul>
-            {navItems.map((item) => (
-              <li key={item.href}>
-                <Link href={item.href}>{item.label}</Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <Link href="http://localhost:3000" className="external">
-          Public Web →
+    <AdminShell>
+      <p className="eyebrow">대시보드</p>
+      <h1>Control Tower</h1>
+      <div className="cards">
+        <Link href="/campaigns" className="card">
+          <h2>{stats?.campaignCount ?? "—"}</h2>
+          <p>캠페인</p>
         </Link>
-      </aside>
-      <main className="content">
-        <p className="eyebrow">Phase 0</p>
-        <h1>대시보드</h1>
-        <p className="lead">
-          Site Factory·문의 관리 기능은 Phase 1~4에서 연결됩니다.
-        </p>
-        <div className="cards">
-          <Link href="/campaigns" className="card">
-            <h2>캠페인</h2>
-            <p>Phase 1에서 CRUD 연결</p>
-          </Link>
-          <Link href="/status" className="card">
-            <h2>API 상태</h2>
-            <p>/health · /ready 확인</p>
-          </Link>
-        </div>
-      </main>
-    </div>
+        <Link href="/inquiries?status=new" className="card">
+          <h2>{stats?.newInquiries ?? "—"}</h2>
+          <p>신규 문의</p>
+        </Link>
+        <Link href="/inquiries" className="card">
+          <h2>{stats?.inquiryCount ?? "—"}</h2>
+          <p>전체 문의</p>
+        </Link>
+        <Link href="/appointments" className="card">
+          <h2>{stats?.upcomingAppointments ?? "—"}</h2>
+          <p>예정 방문</p>
+        </Link>
+      </div>
+    </AdminShell>
   );
 }

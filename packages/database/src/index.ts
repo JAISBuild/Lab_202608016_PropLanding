@@ -15,4 +15,4 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 export { PrismaClient };
-export type { Organization } from "@prisma/client";
+export * from "@prisma/client";

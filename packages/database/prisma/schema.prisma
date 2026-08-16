@@ -1,5 +1,4 @@
-// PropLanding schema v0 — Phase 0 foundation
-// Phase 1 will extend with campaigns, site_blocks, media_assets, etc.
+// PropLanding — Full schema (Phases 1-6)
 
 generator client {
   provider = "prisma-client-js"
@@ -10,14 +9,412 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// Tenant (분양대행·시행·건설사 등)
 model Organization {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   name      String
-  slug      String   @unique
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  slug      String    @unique
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
+  campaigns    Campaign[]
+  mediaAssets  MediaAsset[]
+  staffMembers StaffMember[]
+  adminUsers   AdminUser[]
+  inquiries    Inquiry[]
+  legalNotices LegalNotice[]
+
   @@map("organizations")
+}
+
+model SiteTemplate {
+  id         String     @id @default(cuid())
+  layoutKey  String     @map("layout_key")
+  version    String     @default("1")
+  name       String
+  createdAt  DateTime   @default(now()) @map("created_at")
+  campaigns  Campaign[]
+
+  @@map("site_templates")
+}
+
+model Campaign {
+  id              String    @id @default(cuid())
+  organizationId  String    @map("organization_id")
+  siteTemplateId  String?   @map("site_template_id")
+  slug            String
+  title           String
+  status          String    @default("draft")
+  contactPhone    String?   @map("contact_phone")
+  previewToken    String?   @map("preview_token")
+  publishedAt     DateTime? @map("published_at")
+  meta            Json?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  siteTemplate SiteTemplate? @relation(fields: [siteTemplateId], references: [id])
+  siteBlocks   SiteBlock[]
+  campaignMedia CampaignMedia[]
+  unitTypes    UnitType[]
+  inquiries    Inquiry[]
+  legalLinks   CampaignLegalNotice[]
+  attributionTouches AttributionTouch[]
+  analyticsEvents AnalyticsEvent[]
+
+  @@unique([organizationId, slug])
+  @@map("campaigns")
+}
+
+model SiteBlock {
+  id         String   @id @default(cuid())
+  campaignId String   @map("campaign_id")
+  type       String
+  sortOrder  Int      @default(0) @map("sort_order")
+  payload    Json     @default("{}")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId, sortOrder])
+  @@map("site_blocks")
+}
+
+model MediaAsset {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  storageKey     String    @map("storage_key")
+  mimeType       String    @map("mime_type")
+  fileName       String    @map("file_name")
+  fileSize       Int       @map("file_size")
+  altText        String?   @map("alt_text")
+  width          Int?
+  height         Int?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  organization  Organization @relation(fields: [organizationId], references: [id])
+  campaignMedia CampaignMedia[]
+  unitTypeMedia UnitTypeMedia[]
+
+  @@map("media_assets")
+}
+
+model CampaignMedia {
+  id         String @id @default(cuid())
+  campaignId String @map("campaign_id")
+  mediaId    String @map("media_id")
+  purpose    String @default("gallery")
+  sortOrder  Int    @default(0) @map("sort_order")
+
+  campaign Campaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  media    MediaAsset @relation(fields: [mediaId], references: [id])
+
+  @@index([campaignId])
+  @@map("campaign_media")
+}
+
+model UnitType {
+  id         String   @id @default(cuid())
+  campaignId String   @map("campaign_id")
+  code       String
+  name       String
+  areaSqm    Float?   @map("area_sqm")
+  specs      Json?
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  campaign  Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  media     UnitTypeMedia[]
+  inquiries Inquiry[]
+
+  @@unique([campaignId, code])
+  @@map("unit_types")
+}
+
+model UnitTypeMedia {
+  id         String @id @default(cuid())
+  unitTypeId String @map("unit_type_id")
+  mediaId    String @map("media_id")
+  purpose    String @default("floorplan")
+
+  unitType UnitType   @relation(fields: [unitTypeId], references: [id], onDelete: Cascade)
+  media    MediaAsset @relation(fields: [mediaId], references: [id])
+
+  @@map("unit_type_media")
+}
+
+model LegalNotice {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  type           String   @default("privacy")
+  version        String
+  title          String
+  content        String
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  campaigns    CampaignLegalNotice[]
+  consents     InquiryConsent[]
+
+  @@unique([organizationId, type, version])
+  @@map("legal_notices")
+}
+
+model CampaignLegalNotice {
+  id            String @id @default(cuid())
+  campaignId    String @map("campaign_id")
+  legalNoticeId String @map("legal_notice_id")
+
+  campaign    Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  legalNotice LegalNotice @relation(fields: [legalNoticeId], references: [id])
+
+  @@map("campaign_legal_notices")
+}
+
+model StaffMember {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  name           String
+  email          String?
+  phone          String?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  adminUser    AdminUser?
+  inquiries    Inquiry[]
+  assignments  InquiryAssignment[]
+
+  @@map("staff_members")
+}
+
+model AdminUser {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  staffMemberId  String?  @unique @map("staff_member_id")
+  email          String   @unique
+  passwordHash   String   @map("password_hash")
+  name           String
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  staffMember  StaffMember? @relation(fields: [staffMemberId], references: [id])
+  roles        AdminUserRole[]
+  auditLogs    AuditLog[]
+
+  @@map("admin_users")
+}
+
+model Role {
+  id   String @id @default(cuid())
+  name String @unique
+  users AdminUserRole[]
+
+  @@map("roles")
+}
+
+model AdminUserRole {
+  adminUserId String @map("admin_user_id")
+  roleId      String @map("role_id")
+
+  adminUser AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  role      Role      @relation(fields: [roleId], references: [id])
+
+  @@id([adminUserId, roleId])
+  @@map("admin_user_roles")
+}
+
+model Inquiry {
+  id                   String    @id @default(cuid())
+  organizationId       String    @map("organization_id")
+  campaignId           String    @map("campaign_id")
+  visitorSessionId     String?   @map("visitor_session_id")
+  assignedStaffId      String?   @map("assigned_staff_id")
+  fullName             String    @map("full_name")
+  phone                String
+  email                String?
+  preferredVisitAt     DateTime? @map("preferred_visit_at")
+  interestedUnitTypeId String?   @map("interested_unit_type_id")
+  status               String    @default("new")
+  sourceSnapshot       Json?     @map("source_snapshot")
+  leadScore            Int       @default(0) @map("lead_score")
+  aiCategory           String?   @map("ai_category")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  organization   Organization   @relation(fields: [organizationId], references: [id])
+  campaign       Campaign       @relation(fields: [campaignId], references: [id])
+  visitorSession VisitorSession? @relation(fields: [visitorSessionId], references: [id])
+  assignedStaff  StaffMember?   @relation(fields: [assignedStaffId], references: [id])
+  interestedUnit UnitType?      @relation(fields: [interestedUnitTypeId], references: [id])
+  events         InquiryEvent[]
+  consents       InquiryConsent[]
+  consultations  Consultation[]
+  appointments   Appointment[]
+  assignments    InquiryAssignment[]
+  analyticsEvents AnalyticsEvent[]
+
+  @@index([campaignId, status, createdAt(sort: Desc)])
+  @@map("inquiries")
+}
+
+model InquiryEvent {
+  id        String   @id @default(cuid())
+  inquiryId String   @map("inquiry_id")
+  type      String
+  payload   Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  inquiry Inquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+
+  @@index([inquiryId, createdAt])
+  @@map("inquiry_events")
+}
+
+model InquiryConsent {
+  id            String   @id @default(cuid())
+  inquiryId     String   @map("inquiry_id")
+  legalNoticeId String   @map("legal_notice_id")
+  agreedAt      DateTime @default(now()) @map("agreed_at")
+
+  inquiry     Inquiry     @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  legalNotice LegalNotice @relation(fields: [legalNoticeId], references: [id])
+
+  @@map("inquiry_consents")
+}
+
+model Consultation {
+  id        String   @id @default(cuid())
+  inquiryId String   @map("inquiry_id")
+  channel   String
+  note      String?
+  outcome   String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  inquiry Inquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+
+  @@map("consultations")
+}
+
+model Appointment {
+  id          String   @id @default(cuid())
+  inquiryId   String   @map("inquiry_id")
+  scheduledAt DateTime @map("scheduled_at")
+  status      String   @default("scheduled")
+  note        String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  inquiry Inquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+
+  @@map("appointments")
+}
+
+model AssignmentRule {
+  id             String @id @default(cuid())
+  organizationId String @map("organization_id")
+  type           String @default("round_robin")
+  config         Json?
+
+  @@map("assignment_rules")
+}
+
+model InquiryAssignment {
+  id        String   @id @default(cuid())
+  inquiryId String   @map("inquiry_id")
+  staffId   String   @map("staff_id")
+  method    String   @default("manual")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  inquiry Inquiry     @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  staff   StaffMember @relation(fields: [staffId], references: [id])
+
+  @@map("inquiry_assignments")
+}
+
+model MarketingSource {
+  id   String @id @default(cuid())
+  code String @unique
+  name String
+
+  utmCampaigns UtmCampaign[]
+
+  @@map("marketing_sources")
+}
+
+model UtmCampaign {
+  id                String @id @default(cuid())
+  marketingSourceId String @map("marketing_source_id")
+  name              String
+  utmSource         String? @map("utm_source")
+  utmMedium         String? @map("utm_medium")
+  utmCampaign       String? @map("utm_campaign")
+
+  marketingSource MarketingSource @relation(fields: [marketingSourceId], references: [id])
+
+  @@map("utm_campaigns")
+}
+
+model VisitorSession {
+  id           String   @id @default(cuid())
+  sessionKey   String   @unique @map("session_key")
+  utmSource    String?  @map("utm_source")
+  utmMedium    String?  @map("utm_medium")
+  utmCampaign  String?  @map("utm_campaign")
+  referrer     String?
+  userAgent    String?  @map("user_agent")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  inquiries          Inquiry[]
+  attributionTouches AttributionTouch[]
+  analyticsEvents    AnalyticsEvent[]
+
+  @@map("visitor_sessions")
+}
+
+model AttributionTouch {
+  id               String   @id @default(cuid())
+  campaignId       String   @map("campaign_id")
+  visitorSessionId String   @map("visitor_session_id")
+  touchedAt        DateTime @default(now()) @map("touched_at")
+
+  campaign       Campaign       @relation(fields: [campaignId], references: [id])
+  visitorSession VisitorSession @relation(fields: [visitorSessionId], references: [id])
+
+  @@unique([campaignId, visitorSessionId])
+  @@map("attribution_touches")
+}
+
+model AnalyticsEvent {
+  id               String   @id @default(cuid())
+  campaignId       String?  @map("campaign_id")
+  visitorSessionId String?  @map("visitor_session_id")
+  inquiryId        String?  @map("inquiry_id")
+  eventName        String   @map("event_name")
+  properties       Json?
+  occurredAt       DateTime @default(now()) @map("occurred_at")
+
+  campaign       Campaign?       @relation(fields: [campaignId], references: [id])
+  visitorSession VisitorSession? @relation(fields: [visitorSessionId], references: [id])
+  inquiry        Inquiry?        @relation(fields: [inquiryId], references: [id])
+
+  @@index([campaignId, occurredAt(sort: Desc)])
+  @@map("analytics_events")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  adminUserId String?  @map("admin_user_id")
+  action      String
+  resource    String?
+  resourceId  String?  @map("resource_id")
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  adminUser AdminUser? @relation(fields: [adminUserId], references: [id])
+
+  @@map("audit_logs")
 }
