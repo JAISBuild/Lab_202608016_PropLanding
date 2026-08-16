@@ -1,0 +1,23 @@
+// PropLanding schema v0 — Phase 0 foundation
+// Phase 1 will extend with campaigns, site_blocks, media_assets, etc.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Tenant (분양대행·시행·건설사 등)
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("organizations")
+}

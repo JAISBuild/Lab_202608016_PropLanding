@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "cursor/**"]
+  pull_request:
+    branches: [main]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: proplanding
+          POSTGRES_PASSWORD: proplanding
+          POSTGRES_DB: proplanding
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U proplanding -d proplanding"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://proplanding:proplanding@localhost:5432/proplanding?schema=public
+      API_PORT: "4000"
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm db:generate
+
+      - name: Run migrations
+        run: pnpm --filter @proplanding/database migrate:deploy
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: NODE_ENV=production pnpm build
+
+      - name: Start API and verify health
+        run: |
+          pnpm --filter @proplanding/api start &
+          sleep 3
+          curl -sf http://localhost:4000/health
+          curl -sf http://localhost:4000/ready

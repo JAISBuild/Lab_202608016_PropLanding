@@ -1,0 +1,28 @@
+{
+  "name": "proplanding",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PropLanding — 캠페인 랜딩 & 영업운영 플랫폼",
+  "scripts": {
+    "dev": "pnpm run --parallel dev",
+    "dev:api": "pnpm --filter @proplanding/api dev",
+    "dev:web": "pnpm --filter @proplanding/web dev",
+    "dev:admin": "pnpm --filter @proplanding/admin dev",
+    "build": "pnpm run -r build",
+    "lint": "pnpm run -r lint",
+    "test": "pnpm run -r test",
+    "typecheck": "pnpm run -r typecheck",
+    "db:generate": "pnpm --filter @proplanding/database generate",
+    "db:migrate": "pnpm --filter @proplanding/database migrate",
+    "db:push": "pnpm --filter @proplanding/database push",
+    "db:studio": "pnpm --filter @proplanding/database studio",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "setup": "pnpm install && pnpm docker:up && pnpm db:generate && pnpm db:migrate"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.4"
+}

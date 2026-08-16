@@ -1,6 +1,47 @@
 # Lab_202608016_PropLanding
 
-분양·프로모션 캠페인용 **랜딩 페이지 생성 및 영업 운영 플랫폼** 설계 저장소입니다.
+분양·프로모션 캠페인용 **랜딩 페이지 생성 및 영업 운영 플랫폼**입니다.
+
+## 현재 진행: Phase 0 ✅ 기반 구축
+
+| 앱/패키지 | 포트 | 설명 |
+|-----------|------|------|
+| `@proplanding/web` | 3000 | 공개 랜딩 (스켈레톤) |
+| `@proplanding/admin` | 3001 | Control Tower (스켈레톤) |
+| `@proplanding/api` | 4000 | REST API — `/health`, `/ready` |
+| PostgreSQL | 5432 | Docker Compose |
+
+## 빠른 시작
+
+```bash
+cp .env.example .env
+pnpm install
+pnpm docker:up          # PostgreSQL 시작
+pnpm db:generate
+pnpm db:migrate         # 스키마 v0 적용
+pnpm dev:api            # API :4000
+pnpm dev:web            # Web :3000
+pnpm dev:admin          # Admin :3001
+```
+
+헬스체크:
+
+```bash
+curl http://localhost:4000/health
+curl http://localhost:4000/ready
+```
+
+## 모노레포 구조
+
+```text
+apps/
+  web/          # 공개 랜딩 (Next.js)
+  admin/        # 운영 콘솔 (Next.js)
+packages/
+  api/          # Hono API 서버
+  database/     # Prisma schema v0
+  shared/       # 공통 타입·유틸
+```
 
 ## 문서 (코딩 전 필독)
 

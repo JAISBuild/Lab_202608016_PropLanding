@@ -1,0 +1,28 @@
+{
+  "name": "@proplanding/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PropLanding public landing app",
+  "scripts": {
+    "dev": "next dev --port ${WEB_PORT:-3000}",
+    "build": "next build",
+    "start": "next start --port ${WEB_PORT:-3000}",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"No tests yet\""
+  },
+  "dependencies": {
+    "@proplanding/shared": "workspace:*",
+    "next": "^15.1.7",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "eslint": "^9.20.0",
+    "eslint-config-next": "^15.1.7",
+    "typescript": "^5.7.3"
+  }
+}

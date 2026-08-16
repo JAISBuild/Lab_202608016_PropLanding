@@ -15,7 +15,7 @@
 | UX·그래픽·클릭 설계 | ✅ 완료 | [design.md](./design.md) |
 | 개발·운영 룰 | ✅ 완료 | [rules.md](./rules.md) |
 | 8단계 구현 플랜 | ✅ 완료 | [implementation-plan.md](./implementation-plan.md) |
-| **코딩** | ⏳ 미착수 | Phase 0부터 |
+| **코딩** | 🔄 Phase 0 완료 | [implementation-plan.md](./implementation-plan.md) Phase 0 |
 
 ---
 
