@@ -89,6 +89,19 @@
 | 문의 분류 (`classifyInquiry`) | ✅ |
 | AI 실패 시 수동 폴백 | ✅ (규칙 기반) |
 
+## 프로덕션 개선 ✅
+
+| 항목 | 결과 |
+|------|------|
+| Prisma `migrate deploy` (단일 마이그레이션) | ✅ |
+| S3/MinIO 스토리지 + signed upload URL | ✅ |
+| 이미지 variants (sharp → WebP) | ✅ |
+| Lighthouse (skeleton, preconnect, image sizes) | ✅ |
+| AI LLM (OPENAI_API_KEY) + 규칙 폴백 | ✅ |
+| MinIO docker-compose | ✅ |
+
+문서: [ops/storage.md](./ops/storage.md)
+
 ---
 
 ## 데모 접속

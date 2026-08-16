@@ -92,6 +92,7 @@ model MediaAsset {
   altText        String?   @map("alt_text")
   width          Int?
   height         Int?
+  variants       Json?     @map("variants")
   createdAt      DateTime  @default(now()) @map("created_at")
   deletedAt      DateTime? @map("deleted_at")
 

@@ -1,6 +1,11 @@
 import { prisma } from "@proplanding/database";
 import type { CreateInquiryInput } from "@proplanding/shared";
 import { assignInquiryRoundRobin } from "./assignments";
+import {
+  classifyInquiry,
+  computeLeadScoreRules,
+  summarizeConsultation,
+} from "./ai";
 
 export async function createInquiry(input: CreateInquiryInput) {
   return prisma.$transaction(async (tx) => {
@@ -194,19 +199,21 @@ export async function computeLeadScore(inquiryId: string): Promise<number> {
     where: { id: inquiryId },
     include: {
       analyticsEvents: true,
-      interestedUnit: true,
       appointments: true,
     },
   });
 
-  let score = 10;
-  if (inquiry.interestedUnitTypeId) score += 20;
-  if (inquiry.preferredVisitAt) score += 15;
-  if (inquiry.appointments.length > 0) score += 25;
-  const videoEvents = inquiry.analyticsEvents.filter((e) => e.eventName === "media_play");
-  if (videoEvents.length > 0) score += 15;
-  const unitViews = inquiry.analyticsEvents.filter((e) => e.eventName === "unit_type_view");
-  score += Math.min(unitViews.length * 5, 15);
+  const videoPlays = inquiry.analyticsEvents.filter((e) => e.eventName === "media_play").length;
+  const unitViews = inquiry.analyticsEvents.filter((e) => e.eventName === "unit_type_view").length;
+
+  const score = computeLeadScoreRules({
+    hasUnitType: Boolean(inquiry.interestedUnitTypeId),
+    hasVisitDate: Boolean(inquiry.preferredVisitAt),
+    hasAppointment: inquiry.appointments.length > 0,
+    videoPlays,
+    unitViews,
+    category: (inquiry.aiCategory as "urgent" | undefined) ?? undefined,
+  });
 
   await prisma.inquiry.update({
     where: { id: inquiryId },
@@ -216,9 +223,5 @@ export async function computeLeadScore(inquiryId: string): Promise<number> {
   return score;
 }
 
-export function classifyInquiry(note: string): string {
-  if (/방문|예약|견학/.test(note)) return "visit_request";
-  if (/가격|분양가|계약/.test(note)) return "pricing";
-  if (/대출|금융/.test(note)) return "finance";
-  return "general";
-}
+// Legacy export for admin routes
+export { classifyInquiry };

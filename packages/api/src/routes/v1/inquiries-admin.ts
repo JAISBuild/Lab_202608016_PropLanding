@@ -8,8 +8,8 @@ import {
   addConsultation,
   createAppointment,
   computeLeadScore,
-  classifyInquiry,
 } from "../../services/inquiries";
+import { classifyInquiry, summarizeConsultation } from "../../services/ai";
 import { requireAuth } from "../../middleware/auth";
 import { prisma } from "@proplanding/database";
 import type { ApiEnv } from "../../types";
@@ -55,10 +55,18 @@ inquiriesAdmin.post(
     const body = c.req.valid("json");
     const item = await addConsultation(auth.orgId, c.req.param("id"), body);
     if (body.note) {
-      const category = classifyInquiry(body.note);
+      const { category } = await classifyInquiry(body.note);
+      const summary = await summarizeConsultation(body.note);
       await prisma.inquiry.update({
         where: { id: c.req.param("id") },
         data: { aiCategory: category },
+      });
+      await prisma.inquiryEvent.create({
+        data: {
+          inquiryId: c.req.param("id"),
+          type: "ai_summary",
+          payload: { summary, category },
+        },
       });
     }
     return c.json({ data: item }, 201);

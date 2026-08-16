@@ -39,3 +39,5 @@ packages/database/prisma/*.db-journal
 # Misc
 .turbo/
 .vercel/
+uploads/
+backups/

@@ -381,3 +381,33 @@
   gap: 0.75rem;
   margin-top: 2rem;
 }
+
+/* Loading skeleton (LCP placeholder) */
+.pl-skeleton {
+  padding: 0 0 5rem;
+}
+
+.pl-skeleton__hero {
+  height: 70vh;
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: pl-shimmer 1.2s infinite;
+}
+
+.pl-skeleton__block {
+  height: 200px;
+  margin: 1.5rem 1.25rem;
+  border-radius: var(--pl-radius);
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: pl-shimmer 1.2s infinite;
+}
+
+.pl-skeleton__block.short {
+  height: 120px;
+}
+
+@keyframes pl-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

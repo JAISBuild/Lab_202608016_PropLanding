@@ -2,9 +2,14 @@
 
 분양·프로모션 캠페인용 **랜딩 페이지 생성 및 영업 운영 플랫폼**입니다.
 
-## 현재 진행: Phase 1~7 구현 완료 ✅
+## 현재 진행: Phase 1~7 + 프로덕션 개선 ✅
 
-상세 점검: [docs/PHASE-CHECKLIST.md](docs/PHASE-CHECKLIST.md)
+- Prisma `migrate deploy` (단일 init_platform 마이그레이션)
+- S3/MinIO 스토리지 + 이미지 variants (sharp WebP)
+- Lighthouse 최적화 (skeleton, preconnect, image sizes)
+- AI 서비스 (OpenAI 선택 + 규칙 폴백)
+
+상세: [docs/PHASE-CHECKLIST.md](docs/PHASE-CHECKLIST.md) · [docs/ops/runbook.md](docs/ops/runbook.md)
 
 | 앱/패키지 | 포트 | 설명 |
 |-----------|------|------|
@@ -20,7 +25,8 @@ cp .env.example .env
 pnpm install
 pnpm docker:up          # PostgreSQL 시작
 pnpm db:generate
-pnpm db:migrate         # 스키마 v0 적용
+pnpm db:migrate          # migrate deploy (프로덕션)
+# 개발 초기화: pnpm --filter @proplanding/database exec prisma migrate dev
 pnpm dev:api            # API :4000
 pnpm dev:web            # Web :3000
 pnpm dev:admin          # Admin :3001

@@ -17,6 +17,8 @@ body {
   background: var(--pl-color-surface);
   color: var(--pl-color-text);
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 .page {

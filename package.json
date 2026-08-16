@@ -13,7 +13,7 @@
     "test": "pnpm run -r test",
     "typecheck": "pnpm run -r typecheck",
     "db:generate": "pnpm --filter @proplanding/database generate",
-    "db:migrate": "pnpm --filter @proplanding/database migrate",
+    "db:migrate": "pnpm --filter @proplanding/database migrate:deploy",
     "db:push": "pnpm --filter @proplanding/database push",
     "db:studio": "pnpm --filter @proplanding/database studio",
     "docker:up": "docker compose up -d",
