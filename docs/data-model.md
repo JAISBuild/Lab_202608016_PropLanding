@@ -1,5 +1,7 @@
 # PropLanding — 데이터 모델 상세
 
+> 관련 문서: [문서 허브](./README.md) · [설계](./design.md) · [플랜](./implementation-plan.md) · [아키텍처](./architecture.md)
+
 본 문서는 [`architecture.md`](./architecture.md)의 데이터 계층을 구체화합니다.  
 테이블·컬럼명은 업계 관례와 독자 명명 규칙을 혼합했으며, 특정 외부 서비스 스키마를 복제하지 않습니다.
 
