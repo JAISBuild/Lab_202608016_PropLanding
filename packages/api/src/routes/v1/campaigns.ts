@@ -70,8 +70,8 @@ campaigns.patch(
 
 campaigns.post("/:id/publish", async (c) => {
   const auth = c.get("auth");
-  const item = await publishCampaign(auth.orgId, c.req.param("id"));
-  return c.json({ data: item });
+  const result = await publishCampaign(auth.orgId, c.req.param("id"));
+  return c.json({ data: result });
 });
 
 campaigns.put(

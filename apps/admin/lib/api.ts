@@ -72,8 +72,78 @@ export async function createCampaign(data: { title: string; slug: string; contac
   });
 }
 
+export type MediaAsset = {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+  altText: string | null;
+  width: number | null;
+  height: number | null;
+  url: string;
+  thumbUrl: string;
+  mediumUrl: string;
+  largeUrl: string;
+  createdAt: string;
+};
+
+export type PublishResult = {
+  campaign: Record<string, unknown>;
+  cdn: { ok: boolean; invalidationId?: string; skipped?: boolean };
+  revalidated: boolean;
+};
+
+export async function updateCampaign(
+  id: string,
+  data: Partial<{ title: string; slug: string; contactPhone: string }>,
+) {
+  return apiFetch<Record<string, unknown>>(`/api/v1/campaigns/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateCampaignBlocks(
+  id: string,
+  blocks: Array<{ type: string; sortOrder: number; payload: Record<string, unknown> }>,
+) {
+  return apiFetch<Record<string, unknown>>(`/api/v1/campaigns/${id}/blocks`, {
+    method: "PUT",
+    body: JSON.stringify({ blocks }),
+  });
+}
+
 export async function publishCampaign(id: string) {
-  return apiFetch<Record<string, unknown>>(`/api/v1/campaigns/${id}/publish`, { method: "POST" });
+  return apiFetch<PublishResult>(`/api/v1/campaigns/${id}/publish`, { method: "POST" });
+}
+
+export async function listMedia() {
+  return apiFetch<MediaAsset[]>("/api/v1/media/library");
+}
+
+export async function uploadMedia(file: File, altText?: string): Promise<MediaAsset> {
+  const formData = new FormData();
+  formData.append("file", file);
+  if (altText) formData.append("altText", altText);
+
+  const token = getToken();
+  const res = await fetch(`${API_URL}/api/v1/media/upload`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+
+  if (res.status === 401) {
+    clearToken();
+    if (typeof window !== "undefined") window.location.href = "/login";
+    throw new Error("Unauthorized");
+  }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error ?? `Upload failed ${res.status}`);
+  }
+  const json = await res.json();
+  return json.data as MediaAsset;
 }
 
 export async function getInquiries(params?: { status?: string }) {

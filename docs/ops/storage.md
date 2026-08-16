@@ -45,3 +45,5 @@ AWS_SECRET_ACCESS_KEY=...
 ```
 
 `S3_ENDPOINT`는 AWS 실서비스에서 생략합니다.
+
+CloudFront 무효화 및 ISR revalidate는 [cloudfront.md](./cloudfront.md)를 참고하세요.

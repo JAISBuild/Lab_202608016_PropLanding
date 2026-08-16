@@ -1,6 +1,11 @@
 import { prisma } from "@proplanding/database";
 import type { PublicCampaign } from "@proplanding/shared";
 import { getPublicMediaUrl } from "../lib/storage";
+import {
+  buildCdnPathsForCampaign,
+  invalidateCdnPaths,
+  revalidateWebCache,
+} from "../lib/cdn";
 
 export async function getDefaultOrgId(): Promise<string> {
   const org = await prisma.organization.findFirst({ where: { deletedAt: null } });
@@ -142,10 +147,15 @@ export async function updateCampaign(
 }
 
 export async function publishCampaign(orgId: string, id: string) {
-  return prisma.campaign.update({
+  const campaign = await prisma.campaign.update({
     where: { id, organizationId: orgId },
     data: { status: "published", publishedAt: new Date() },
   });
+
+  const cdnResult = await invalidateCdnPaths(buildCdnPathsForCampaign(campaign.slug));
+  const revalidated = await revalidateWebCache(campaign.slug);
+
+  return { campaign, cdn: cdnResult, revalidated };
 }
 
 export async function upsertSiteBlocks(
