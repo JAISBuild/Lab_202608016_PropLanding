@@ -4,9 +4,12 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { PublicCampaign } from "@proplanding/shared";
 import { PlHero } from "@/components/public/PlHero";
+import { PlRhythm } from "@/components/public/PlRhythm";
 import { PlGallery } from "@/components/public/PlGallery";
+import { PlLifestyle } from "@/components/public/PlLifestyle";
 import { PlVideoBlock } from "@/components/public/PlVideoBlock";
 import { PlUnitGrid } from "@/components/public/PlUnitGrid";
+import { PlFaq } from "@/components/public/PlFaq";
 import { PlStickyCta } from "@/components/public/PlStickyCta";
 import { PlInquiryForm } from "@/components/public/PlInquiryForm";
 import { PlReserveForm } from "@/components/public/PlReserveForm";
@@ -23,7 +26,6 @@ interface CampaignViewProps {
 export function CampaignView({ campaign, slug }: CampaignViewProps) {
   const router = useRouter();
   const [modal, setModal] = useState<"reserve" | "register" | null>(null);
-
   const sessionKey = useCallback(() => getSessionKey(), []);
 
   useEffect(() => {
@@ -65,71 +67,38 @@ export function CampaignView({ campaign, slug }: CampaignViewProps) {
     router.push(`/c/${slug}/thanks?type=inquiry`);
   }
 
+  const hero = campaign.blocks.find((b) => b.type === "hero");
+  const gallery = campaign.blocks.find((b) => b.type === "gallery");
+  const video = campaign.blocks.find((b) => b.type === "video");
+  const benefit = campaign.blocks.find((b) => b.type === "raw_text");
+
   return (
     <div className="pl-campaign">
       <PlSiteHeader title={campaign.title} phone={campaign.contactPhone} />
-      {campaign.blocks.map((block) => {
-        const p = block.payload;
-        switch (block.type) {
-          case "hero":
-            return (
-              <PlHero
-                key={block.id}
-                brandName={campaign.title}
-                headline={String(p.headline ?? "")}
-                subheadline={p.subheadline ? String(p.subheadline) : undefined}
-                imageUrl={p.imageUrl ? String(p.imageUrl) : undefined}
-              />
-            );
-          case "gallery": {
-            const images = (p.images as { url: string; alt: string }[]) ?? [];
-            return (
-              <PlGallery
-                key={block.id}
-                title={p.title ? String(p.title) : undefined}
-                images={images}
-                onImageClick={() =>
-                  void trackEvent({
-                    campaignId: campaign.id,
-                    eventName: "cta_click",
-                    sessionKey: sessionKey(),
-                    properties: { action: "gallery_zoom" },
-                  })
-                }
-              />
-            );
+      {hero ? (
+        <PlHero
+          brandName={campaign.title}
+          headline={String(hero.payload.headline ?? "")}
+          subheadline={hero.payload.subheadline ? String(hero.payload.subheadline) : undefined}
+          imageUrl={hero.payload.imageUrl ? String(hero.payload.imageUrl) : undefined}
+        />
+      ) : null}
+      <PlRhythm />
+      {gallery ? (
+        <PlGallery
+          title={gallery.payload.title ? String(gallery.payload.title) : undefined}
+          images={(gallery.payload.images as { url: string; alt: string }[]) ?? []}
+          onImageClick={() =>
+            void trackEvent({
+              campaignId: campaign.id,
+              eventName: "cta_click",
+              sessionKey: sessionKey(),
+              properties: { action: "gallery_zoom" },
+            })
           }
-          case "video":
-            return (
-              <PlVideoBlock
-                key={block.id}
-                title={p.title ? String(p.title) : undefined}
-                videoUrl={String(p.videoUrl ?? "")}
-                posterUrl={p.posterUrl ? String(p.posterUrl) : undefined}
-                onPlay={() =>
-                  void trackEvent({
-                    campaignId: campaign.id,
-                    eventName: "media_play",
-                    sessionKey: sessionKey(),
-                  })
-                }
-              />
-            );
-          case "raw_text":
-            return (
-              <section key={block.id} className="pl-section pl-benefits">
-                <div className="pl-container pl-benefits__inner">
-                  {p.title ? <span className="pl-benefits__eyebrow">{String(p.title)}</span> : null}
-                  <p className="pl-benefits__body">{String(p.body ?? "")}</p>
-                </div>
-              </section>
-            );
-          default:
-            return null;
-        }
-      })}
-
-      {campaign.unitTypes.length > 0 && (
+        />
+      ) : null}
+      {campaign.unitTypes.length > 0 ? (
         <PlUnitGrid
           slug={slug}
           units={campaign.unitTypes}
@@ -142,16 +111,38 @@ export function CampaignView({ campaign, slug }: CampaignViewProps) {
             })
           }
         />
-      )}
-
+      ) : null}
+      <PlLifestyle />
+      {video ? (
+        <PlVideoBlock
+          title={video.payload.title ? String(video.payload.title) : undefined}
+          videoUrl={String(video.payload.videoUrl ?? "")}
+          posterUrl={video.payload.posterUrl ? String(video.payload.posterUrl) : undefined}
+          onPlay={() =>
+            void trackEvent({
+              campaignId: campaign.id,
+              eventName: "media_play",
+              sessionKey: sessionKey(),
+            })
+          }
+        />
+      ) : null}
+      {benefit ? (
+        <section className="pl-benefits">
+          <div className="pl-container">
+            <p>{String(benefit.payload.title ?? "BENEFIT")}</p>
+            <strong>{String(benefit.payload.body ?? "")}</strong>
+          </div>
+        </section>
+      ) : null}
       <PlInquiryForm
         legalNotices={campaign.legalNotices}
-        unitTypes={campaign.unitTypes.map((u) => ({ id: u.id, name: u.name }))}
+        unitTypes={campaign.unitTypes.map((u) => ({ id: u.id, name: u.name, areaSqm: u.areaSqm }))}
+        phone={campaign.contactPhone}
         onSubmit={handleInquiry}
       />
-
+      <PlFaq />
       <PlSiteFooter title={campaign.title} phone={campaign.contactPhone} />
-
       <PlStickyCta
         phone={campaign.contactPhone}
         onReserve={() => {
@@ -164,7 +155,6 @@ export function CampaignView({ campaign, slug }: CampaignViewProps) {
           });
         }}
         onRegister={() => {
-          setModal("register");
           document.getElementById("pl-section-inquiry")?.scrollIntoView({ behavior: "smooth" });
           void trackEvent({
             campaignId: campaign.id,
@@ -174,7 +164,6 @@ export function CampaignView({ campaign, slug }: CampaignViewProps) {
           });
         }}
       />
-
       {modal === "reserve" && (
         <div className="pl-modal" role="dialog">
           <div className="pl-modal__backdrop" onClick={() => setModal(null)} />

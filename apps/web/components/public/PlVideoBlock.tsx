@@ -1,7 +1,5 @@
 "use client";
 
-import { PlSectionHead } from "./PlSectionHead";
-
 interface PlVideoBlockProps {
   title?: string;
   videoUrl: string;
@@ -9,16 +7,21 @@ interface PlVideoBlockProps {
   onPlay?: () => void;
 }
 
-export function PlVideoBlock({ title, videoUrl, posterUrl, onPlay }: PlVideoBlockProps) {
+export function PlVideoBlock({ title, videoUrl, onPlay }: PlVideoBlockProps) {
   return (
-    <section id="pl-section-video" className="pl-section pl-video">
+    <section id="pl-section-video" className="pl-video">
       <div className="pl-container">
-        <PlSectionHead
-          eyebrow="PROMOTION"
-          title={title ?? "홍보 영상"}
-          description="프로젝트의 비전과 가치를 영상으로 만나보세요."
-          align="center"
-        />
+        <p className="pl-kicker pl-kicker--on-dark">
+          <span />
+          THE PERSONAL RADIUS
+        </p>
+        <div className="pl-video__head">
+          <h2>
+            도시의 속도와
+            <em>나의 온도.</em>
+          </h2>
+          <p>{title ?? "가상의 도심 생활권 프로젝트"} — 영상으로 공간의 리듬을 먼저 느껴 보세요.</p>
+        </div>
         <div className="pl-video__wrap">
           <iframe
             src={videoUrl}
@@ -27,7 +30,6 @@ export function PlVideoBlock({ title, videoUrl, posterUrl, onPlay }: PlVideoBloc
             allowFullScreen
             onLoad={onPlay}
           />
-          {posterUrl && <div className="pl-video__poster" style={{ backgroundImage: `url(${posterUrl})` }} />}
         </div>
       </div>
     </section>

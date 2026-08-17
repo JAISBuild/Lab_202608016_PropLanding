@@ -1,6 +1,4 @@
-"use client";
-
-import Image from "next/image";
+import { PlMark } from "./PlMark";
 
 interface PlHeroProps {
   headline: string;
@@ -9,39 +7,45 @@ interface PlHeroProps {
   brandName?: string;
 }
 
+function splitHeadline(headline: string) {
+  const trimmed = headline.trim();
+  const parts = trimmed.split(/\s+/);
+  if (parts.length < 2) return { before: trimmed, accent: "" };
+  return { before: parts.slice(0, -1).join(" "), accent: parts[parts.length - 1] };
+}
+
 export function PlHero({ headline, subheadline, imageUrl, brandName }: PlHeroProps) {
+  const { before, accent } = splitHeadline(headline);
+
   return (
     <section id="pl-section-hero" className="pl-hero">
-      {imageUrl && (
-        <div className="pl-hero__image">
-          <Image
-            src={imageUrl}
-            alt={headline}
-            fill
-            priority
-            sizes="100vw"
-            className="pl-hero__img"
-          />
-          <div className="pl-hero__overlay" />
-        </div>
-      )}
-      <div className="pl-hero__content">
-        <div className="pl-container">
-          {brandName && <span className="pl-hero__eyebrow">{brandName}</span>}
-          <h1 className="pl-hero__title">{headline}</h1>
-          {subheadline && <p className="pl-hero__sub">{subheadline}</p>}
-          <div className="pl-hero__actions">
-            <a href="#pl-section-inquiry" className="pl-hero__cta pl-hero__cta--primary">
-              상담 신청
-            </a>
-            <a href="#pl-section-gallery" className="pl-hero__cta pl-hero__cta--ghost">
-              둘러보기
-            </a>
-          </div>
+      <div className="pl-hero__copy">
+        <p className="pl-kicker">
+          <span />
+          {brandName ? `${brandName.toUpperCase()} STUDY` : "A RESIDENTIAL STUDY"}
+        </p>
+        <h1 className="pl-hero__title">
+          {before}{" "}
+          {accent ? <PlMark onDark>{accent}</PlMark> : null}
+        </h1>
+        {subheadline ? <p className="pl-hero__sub">{subheadline}</p> : null}
+        <div className="pl-hero__actions">
+          <a href="#pl-section-inquiry" className="pl-btn-lime">
+            방문 상담 예약 <span aria-hidden>→</span>
+          </a>
+          <a href="#pl-section-gallery" className="pl-btn-ghost">
+            프로젝트 살펴보기 <span aria-hidden>↓</span>
+          </a>
         </div>
       </div>
-      <div className="pl-hero__scroll" aria-hidden>
-        <span />
+      <div className="pl-hero__visual">
+        {imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={imageUrl} alt="" className="pl-hero__img" />
+        ) : (
+          <div className="pl-hero__fallback" />
+        )}
+        <p className="pl-hero__scroll">SCROLL TO DISCOVER</p>
       </div>
     </section>
   );

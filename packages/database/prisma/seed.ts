@@ -52,8 +52,8 @@ async function main() {
         type: "hero",
         sortOrder: 0,
         payload: {
-          headline: "한강이 보이는 프리미엄 라이프",
-          subheadline: "리버사이드 힐스 · 선착순 분양",
+          headline: "머무는 방식이 강을 바꿉니다",
+          subheadline: "빛, 동선, 나만의 리듬이 머무는 한강 생활권. 가까운 것부터 천천히 확인해 보세요.",
           imageUrl: "https://picsum.photos/seed/hero-riverside/1920/1080",
         },
       },
@@ -92,29 +92,57 @@ async function main() {
     ],
   });
 
+  await prisma.unitType.upsert({
+    where: { campaignId_code: { campaignId: campaign.id, code: "59a" } },
+    update: {
+      name: "59㎡ A타입",
+      areaSqm: 59,
+      specs: { rooms: "방 3", baths: "욕실 2", tagline: "컴팩트한 3Bay 판상형", note: "실거주 선호 타입" },
+      sortOrder: 0,
+    },
+    create: {
+      campaignId: campaign.id,
+      code: "59a",
+      name: "59㎡ A타입",
+      areaSqm: 59,
+      specs: { rooms: "방 3", baths: "욕실 2", tagline: "컴팩트한 3Bay 판상형", note: "실거주 선호 타입" },
+      sortOrder: 0,
+    },
+  });
+
   const unitA = await prisma.unitType.upsert({
     where: { campaignId_code: { campaignId: campaign.id, code: "84a" } },
-    update: {},
+    update: {
+      name: "84㎡ A타입",
+      areaSqm: 84,
+      specs: { rooms: "방 3", baths: "욕실 2", tagline: "맞통풍 4Bay 판상형", note: "가장 여유로운 대표 타입" },
+      sortOrder: 1,
+    },
     create: {
       campaignId: campaign.id,
       code: "84a",
       name: "84㎡ A타입",
       areaSqm: 84,
-      specs: { rooms: "3룸", direction: "남향" },
-      sortOrder: 0,
+      specs: { rooms: "방 3", baths: "욕실 2", tagline: "맞통풍 4Bay 판상형", note: "가장 여유로운 대표 타입" },
+      sortOrder: 1,
     },
   });
 
   await prisma.unitType.upsert({
     where: { campaignId_code: { campaignId: campaign.id, code: "101b" } },
-    update: {},
+    update: {
+      name: "101㎡ B타입",
+      areaSqm: 101,
+      specs: { rooms: "방 3", baths: "욕실 2", tagline: "두 개의 팬트리와 서재", note: "여유 수납 특화 타입" },
+      sortOrder: 2,
+    },
     create: {
       campaignId: campaign.id,
       code: "101b",
       name: "101㎡ B타입",
       areaSqm: 101,
-      specs: { rooms: "4룸", direction: "남동향" },
-      sortOrder: 1,
+      specs: { rooms: "방 3", baths: "욕실 2", tagline: "두 개의 팬트리와 서재", note: "여유 수납 특화 타입" },
+      sortOrder: 2,
     },
   });
 
