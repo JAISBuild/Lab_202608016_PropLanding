@@ -642,7 +642,7 @@
 .pl-life__wide {
   display: flex;
   flex-direction: column;
-  min-height: 34rem;
+  min-height: 42rem;
 }
 
 .pl-life__wide img,
@@ -657,14 +657,45 @@
 .pl-sunstudy {
   position: relative;
   flex: 1;
-  min-height: 34rem;
+  min-height: 42rem;
   background: #1b1328;
+}
+
+.pl-sunstudy.is-full {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  width: 100vw;
+  height: 100dvh;
+  min-height: 100dvh;
+  border-radius: 0;
+}
+
+html.pl-sun-full,
+html.pl-sun-full body {
+  overflow: hidden;
+}
+
+html.pl-sun-full .pl-sticky-cta,
+html.pl-sun-full .pl-header {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.pl-life__wide:has(.pl-sunstudy.is-full) {
+  overflow: visible;
+  z-index: 220;
+}
+
+.pl-life__wide:has(.pl-sunstudy.is-full) .pl-life__panel {
+  visibility: hidden;
 }
 
 .pl-sunstudy__stage {
   position: absolute;
   inset: 0;
   cursor: grab;
+  touch-action: none;
 }
 
 .pl-sunstudy__stage:active {
@@ -718,6 +749,32 @@
   color: rgba(255, 255, 255, 0.82);
 }
 
+.pl-sunstudy__tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  pointer-events: auto;
+}
+
+.pl-sunstudy__compass {
+  width: 2.1rem;
+  height: 2.1rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(27, 19, 40, 0.72);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+
+.pl-sunstudy__compass span {
+  color: var(--pl-lime);
+}
+
 .pl-sunstudy__legend {
   display: flex;
   gap: 0.45rem;
@@ -760,6 +817,7 @@
   bottom: 6.6rem;
   z-index: 2;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.65rem;
   padding: 0.45rem 0.55rem;
@@ -790,9 +848,51 @@
   font-weight: 700;
 }
 
-.pl-sunstudy__slider input {
+.pl-sunstudy__slider input,
+.pl-sunstudy__tilt input {
   flex: 1;
   accent-color: var(--pl-lime);
+}
+
+.pl-sunstudy__fs {
+  min-height: 2rem;
+  padding: 0 0.8rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--pl-lime);
+  color: var(--pl-ink);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.pl-sunstudy.is-full .pl-sunstudy__dock {
+  bottom: 1.2rem;
+}
+
+.pl-sunstudy__tilt {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 6.5rem;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.pl-sunstudy__hint {
+  position: absolute;
+  left: 0.9rem;
+  top: 3.15rem;
+  z-index: 2;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  text-shadow: 0 1px 8px rgba(27, 19, 40, 0.55);
 }
 
 .pl-life__panel {
