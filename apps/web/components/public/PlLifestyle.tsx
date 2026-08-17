@@ -40,15 +40,27 @@ export function PlLifestyle() {
             <PlRoomPlan />
           </article>
           <article className="pl-life__plain">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/life-lounge.jpg" alt="입주민 라운지" />
+            <div className="pl-life__spaces">
+              <figure>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/images/life-living.jpg" alt="입주민 생활공간" />
+                <figcaption>생활공간</figcaption>
+              </figure>
+              <figure>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/images/life-lounge.jpg" alt="입주민 라운지" />
+                <figcaption>라운지</figcaption>
+              </figure>
+              <figure>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/images/life-library.jpg" alt="작은 도서관" />
+                <figcaption>작은도서관</figcaption>
+              </figure>
+            </div>
             <div className="pl-life__panel pl-life__panel--plain">
               <p>03 / COMMON GROUND</p>
               <h3>함께여서 더 편안한 공용부.</h3>
-              <small>
-                위 갤러리의 커뮤니티는 피트니스·수영장 같은 시설 컷입니다. 공용부는 이웃과 머무는 생활 공간 — 라운지와
-                작은 도서관입니다.
-              </small>
+              <small>이웃과 머무는 생활공간, 라운지, 작은 도서관 — 시설이 아니라 하루의 공용부입니다.</small>
             </div>
           </article>
         </div>
