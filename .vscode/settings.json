@@ -1,0 +1,13 @@
+{
+  "remote.autoForwardPorts": true,
+  "remote.restoreForwardedPorts": true,
+  "remote.autoForwardPortsSource": "hybrid",
+  "remote.forwardOnOpen": true,
+  "remote.portsAttributes": {
+    "3000": {
+      "label": "리버사이드 힐스",
+      "protocol": "http",
+      "onAutoForward": "openPreview"
+    }
+  }
+}
