@@ -19,11 +19,8 @@ interface PlInquiryFormProps {
 }
 
 function chipLabel(name: string, areaSqm?: number | null) {
-  if (!areaSqm) return name;
-  if (name.includes(String(areaSqm))) {
-    return name.replace(/\s*타입$/, "");
-  }
-  return `${areaSqm}㎡`;
+  if (areaSqm == null || Number.isNaN(Number(areaSqm))) return name;
+  return `${Number(areaSqm)}㎡`;
 }
 
 export function PlInquiryForm({ legalNotices, unitTypes, phone, onSubmit }: PlInquiryFormProps) {
