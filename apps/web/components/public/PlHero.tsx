@@ -41,7 +41,7 @@ export function PlHero({ headline, subheadline, imageUrl, brandName }: PlHeroPro
       <div className="pl-hero__visual">
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={imageUrl} alt="" className="pl-hero__img" />
+          <img src={imageUrl} alt="아파트 단지 야경" className="pl-hero__img" />
         ) : (
           <div className="pl-hero__fallback" />
         )}

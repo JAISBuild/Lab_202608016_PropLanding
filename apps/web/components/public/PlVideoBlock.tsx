@@ -7,29 +7,47 @@ interface PlVideoBlockProps {
   onPlay?: () => void;
 }
 
-export function PlVideoBlock({ title, videoUrl, onPlay }: PlVideoBlockProps) {
+function isFileVideo(url: string) {
+  return /\.(mp4|webm|ogg)(\?|$)/i.test(url);
+}
+
+export function PlVideoBlock({ title, videoUrl, posterUrl, onPlay }: PlVideoBlockProps) {
+  const file = isFileVideo(videoUrl);
+
   return (
     <section id="pl-section-video" className="pl-video">
       <div className="pl-container">
         <p className="pl-kicker pl-kicker--on-dark">
           <span />
-          THE PERSONAL RADIUS
+          CAMPAIGN FILM
         </p>
         <div className="pl-video__head">
           <h2>
-            도시의 속도와
-            <em>나의 온도.</em>
+            단지의 속도와
+            <em>집의 온도.</em>
           </h2>
-          <p>{title ?? "가상의 도심 생활권 프로젝트"} — 영상으로 공간의 리듬을 먼저 느껴 보세요.</p>
+          <p>{title ?? "주거 홍보 영상"} — 실제 생활 공간을 먼저 둘러보세요.</p>
         </div>
         <div className="pl-video__wrap">
-          <iframe
-            src={videoUrl}
-            title={title ?? "홍보 영상"}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            onLoad={onPlay}
-          />
+          {file ? (
+            <video
+              src={videoUrl}
+              poster={posterUrl}
+              controls
+              playsInline
+              preload="metadata"
+              onPlay={onPlay}
+              title={title ?? "분양 홍보 영상"}
+            />
+          ) : (
+            <iframe
+              src={videoUrl}
+              title={title ?? "홍보 영상"}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              onLoad={onPlay}
+            />
+          )}
         </div>
       </div>
     </section>

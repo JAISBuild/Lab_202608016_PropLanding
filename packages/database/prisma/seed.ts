@@ -54,7 +54,7 @@ async function main() {
         payload: {
           headline: "머무는 방식이 강을 바꿉니다",
           subheadline: "빛, 동선, 나만의 리듬이 머무는 한강 생활권. 가까운 것부터 천천히 확인해 보세요.",
-          imageUrl: "https://picsum.photos/seed/hero-riverside/1920/1080",
+          imageUrl: "/images/hero-apartment-night.jpg",
         },
       },
       {
@@ -64,9 +64,9 @@ async function main() {
         payload: {
           title: "사업지 갤러리",
           images: [
-            { url: "https://picsum.photos/seed/gallery1/1200/800", alt: "조감도" },
-            { url: "https://picsum.photos/seed/gallery2/1200/800", alt: "커뮤니티" },
-            { url: "https://picsum.photos/seed/gallery3/1200/800", alt: "조경" },
+            { url: "/images/gallery-aerial.jpg", alt: "단지 조감도" },
+            { url: "/images/gallery-community.jpg", alt: "커뮤니티 시설 · 피트니스" },
+            { url: "/images/gallery-landscape.jpg", alt: "단지 조경" },
           ],
         },
       },
@@ -75,9 +75,9 @@ async function main() {
         type: "video",
         sortOrder: 2,
         payload: {
-          title: "홍보 영상",
-          videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-          posterUrl: "https://picsum.photos/seed/video-poster/1280/720",
+          title: "주거 홍보 영상",
+          videoUrl: "/videos/promo-living.mp4",
+          posterUrl: "/images/life-light.jpg",
         },
       },
       {

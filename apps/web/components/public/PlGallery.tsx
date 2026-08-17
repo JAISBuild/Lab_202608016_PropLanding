@@ -32,7 +32,7 @@ export function PlGallery({ title, images, onImageClick }: PlGalleryProps) {
       <div className="pl-container pl-gallery__eco">
         <button type="button" className="pl-gallery__feature" onClick={() => open(0)} aria-label={`${featured.alt} 확대`}>
           <Image src={featured.url} alt={featured.alt} fill sizes="(max-width:900px) 100vw, 55vw" />
-          <span>COURTYARD / 01</span>
+          <span>{featured.alt} / 01</span>
         </button>
         <div className="pl-gallery__copy">
           <p className="pl-kicker pl-kicker--light">
@@ -43,9 +43,7 @@ export function PlGallery({ title, images, onImageClick }: PlGalleryProps) {
             도시를 누리고, <PlMark>집에서 회복하는</PlMark> 구조.
           </h2>
           <p>
-            {title
-              ? `${title}의 바깥은 빠르게, 안은 천천히. 빛이 머무는 마당과 맞통풍 동선으로 하루의 속도를 나눠 드립니다.`
-              : "단지 안에서는 천천히, 도시에서는 빠르게. 빛이 머무는 마당과 맞통풍 동선으로 하루의 속도를 나눠 드립니다."}
+            단지의 바깥은 빠르게, 안은 천천히. 조감도로 전체 배치를 보고, 커뮤니티 시설과 조경을 이어서 확인하세요.
           </p>
           <a href="#pl-section-units" className="pl-text-link">
             내게 맞는 타입 찾기 →

@@ -632,32 +632,52 @@
 .pl-life__dark,
 .pl-life__plain {
   position: relative;
-  min-height: 14rem;
-  padding: 1.4rem;
+  min-height: 16rem;
+  padding: 0;
   border-radius: 1.15rem;
+  overflow: hidden;
 }
 
-.pl-life__wide {
-  background: linear-gradient(135deg, var(--pl-sky) 48%, var(--pl-sky-deep));
+.pl-life__wide img,
+.pl-life__plain img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  min-height: 16rem;
+}
+
+.pl-life__panel {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 1.15rem 1.2rem 1.25rem;
+  background: linear-gradient(transparent, rgba(27, 19, 40, 0.88) 28%);
+  color: #fff;
+}
+
+.pl-life__panel--plain {
+  background: linear-gradient(transparent, rgba(246, 244, 238, 0.96) 32%);
+  color: var(--pl-ink);
 }
 
 .pl-life__dark {
+  padding: 1.4rem;
   background: var(--pl-ink);
   color: #fff;
 }
 
-.pl-life__plain {
-  background: var(--pl-cream-2);
-  border: 1px solid var(--pl-line);
-}
-
 .pl-life__wide p,
 .pl-life__dark p,
-.pl-life__plain p {
-  color: #4e7014;
-  font-size: 0.78rem;
+.pl-life__plain p,
+.pl-life__panel p {
+  color: var(--pl-lime);
+  font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.08em;
+}
+
+.pl-life__panel--plain p {
+  color: #4e7014;
 }
 
 .pl-life__dark p {
@@ -666,31 +686,44 @@
 
 .pl-life__wide h3,
 .pl-life__dark h3,
-.pl-life__plain h3 {
-  margin: 0.7rem 0 1rem;
-  font-size: 1.35rem;
+.pl-life__plain h3,
+.pl-life__panel h3 {
+  margin: 0.45rem 0 0.7rem;
+  font-size: 1.25rem;
   letter-spacing: -0.03em;
-}
-
-.pl-life__slab {
-  display: block;
-  width: 4.5rem;
-  height: 8.5rem;
-  margin-left: auto;
-  background: rgba(255, 255, 255, 0.45);
-  border-radius: 0.4rem;
 }
 
 .pl-life__wide small,
 .pl-life__dark small,
-.pl-life__plain small {
+.pl-life__plain small,
+.pl-life__panel small {
   display: block;
-  max-width: 16rem;
+  max-width: 22rem;
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.pl-life__panel--plain small {
   color: var(--pl-muted);
 }
 
 .pl-life__dark small {
   color: rgba(255, 255, 255, 0.68);
+}
+
+.pl-orient {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 0.7rem;
+  padding: 0.35rem 0.4rem 0.15rem;
+  margin: 0 0 0.75rem;
+  max-width: 18rem;
+}
+
+.pl-orient svg {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 @media (min-width: 900px) {
@@ -746,10 +779,12 @@
   background: #120e1c;
 }
 
-.pl-video__wrap iframe {
+.pl-video__wrap iframe,
+.pl-video__wrap video {
   width: 100%;
   height: 100%;
   border: 0;
+  object-fit: cover;
 }
 
 /* Benefits */
@@ -977,17 +1012,19 @@
 
 .pl-faq__item strong {
   color: #4e7014;
-  font-size: 1.15rem;
+  font-size: 14px;
 }
 
 .pl-faq__item span {
   font-weight: 800;
+  font-size: 14px;
+  line-height: 1.55;
 }
 
 .pl-faq__item i {
   font-style: normal;
   color: #4e7014;
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   text-align: right;
 }
 
@@ -995,6 +1032,8 @@
   padding: 0 0 1.2rem 3.6rem;
   color: var(--pl-muted);
   max-width: 38rem;
+  font-size: 14px;
+  line-height: 1.7;
 }
 
 @media (min-width: 900px) {
