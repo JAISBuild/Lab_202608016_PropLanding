@@ -639,6 +639,12 @@
   overflow: hidden;
 }
 
+.pl-life__wide {
+  display: flex;
+  flex-direction: column;
+  min-height: 34rem;
+}
+
 .pl-life__wide img,
 .pl-life__plain img {
   width: 100%;
@@ -648,12 +654,95 @@
   min-height: 16rem;
 }
 
+.pl-sunstudy {
+  position: relative;
+  flex: 1;
+  min-height: 34rem;
+  background: #1b1328;
+}
+
+.pl-sunstudy canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.pl-sunstudy__chrome {
+  position: absolute;
+  top: 0.8rem;
+  left: 0.8rem;
+  right: 0.8rem;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.6rem;
+  pointer-events: none;
+}
+
+.pl-sunstudy__time {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(27, 19, 40, 0.72);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.pl-sunstudy__time em {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--pl-lime);
+}
+
+.pl-sunstudy__legend {
+  display: flex;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pl-sunstudy__legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(27, 19, 40, 0.72);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pl-sunstudy__swatch {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 2px;
+}
+
+.pl-sunstudy__swatch--sun {
+  background: #efc27a;
+}
+
+.pl-sunstudy__swatch--shade {
+  background: #2a2438;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
 .pl-life__panel {
   position: absolute;
   inset: auto 0 0 0;
   padding: 1.15rem 1.2rem 1.25rem;
-  background: linear-gradient(transparent, rgba(27, 19, 40, 0.88) 28%);
+  background: linear-gradient(transparent, rgba(27, 19, 40, 0.55) 18%, rgba(27, 19, 40, 0.9) 72%);
   color: #fff;
+  pointer-events: none;
 }
 
 .pl-life__panel--plain {
@@ -711,20 +800,6 @@
 
 .pl-life__dark small {
   color: rgba(255, 255, 255, 0.68);
-}
-
-.pl-orient {
-  background: rgba(255, 255, 255, 0.92);
-  border-radius: 0.7rem;
-  padding: 0.35rem 0.4rem 0.15rem;
-  margin: 0 0 0.75rem;
-  max-width: 18rem;
-}
-
-.pl-orient svg {
-  display: block;
-  width: 100%;
-  height: auto;
 }
 
 @media (min-width: 900px) {
