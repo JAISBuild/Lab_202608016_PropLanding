@@ -66,7 +66,7 @@ async function main() {
           images: [
             { url: "/images/gallery-aerial.jpg", alt: "단지 조감도" },
             { url: "/images/gallery-community.jpg", alt: "커뮤니티 시설 · 피트니스" },
-            { url: "/images/gallery-landscape.jpg", alt: "단지 조경" },
+            { url: "/images/gallery-courtyard.jpg", alt: "단지 조경" },
           ],
         },
       },
