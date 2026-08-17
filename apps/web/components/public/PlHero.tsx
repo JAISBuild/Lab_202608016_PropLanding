@@ -14,8 +14,22 @@ function splitHeadline(headline: string) {
   return { before: parts.slice(0, -1).join(" "), accent: parts[parts.length - 1] };
 }
 
+const LOCAL_HERO = "/images/hero-apartment-dusk.jpg";
+
+function resolveHeroSrc(imageUrl?: string) {
+  if (!imageUrl) return LOCAL_HERO;
+  if (
+    imageUrl.includes("picsum.photos") ||
+    imageUrl.includes("hero-apartment-night.jpg")
+  ) {
+    return LOCAL_HERO;
+  }
+  return imageUrl;
+}
+
 export function PlHero({ headline, subheadline, imageUrl, brandName }: PlHeroProps) {
   const { before, accent } = splitHeadline(headline);
+  const src = resolveHeroSrc(imageUrl);
 
   return (
     <section id="pl-section-hero" className="pl-hero">
@@ -39,12 +53,8 @@ export function PlHero({ headline, subheadline, imageUrl, brandName }: PlHeroPro
         </div>
       </div>
       <div className="pl-hero__visual">
-        {imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={imageUrl} alt="아파트 단지 야경" className="pl-hero__img" />
-        ) : (
-          <div className="pl-hero__fallback" />
-        )}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={src} alt="아파트 단지 야경" className="pl-hero__img" />
         <p className="pl-hero__scroll">SCROLL TO DISCOVER</p>
       </div>
     </section>

@@ -8,7 +8,7 @@ export async function fetchPublicCampaign(
 ): Promise<PublicCampaign | null> {
   const qs = preview ? `?preview=${encodeURIComponent(preview)}` : "";
   const res = await fetch(`${API_URL}/api/v1/public/campaigns/${slug}${qs}`, {
-    next: { revalidate: 60 },
+    cache: "no-store",
   });
   if (!res.ok) return null;
   const json = await res.json();

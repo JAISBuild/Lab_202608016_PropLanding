@@ -54,7 +54,7 @@ async function main() {
         payload: {
           headline: "머무는 방식이 강을 바꿉니다",
           subheadline: "빛, 동선, 나만의 리듬이 머무는 한강 생활권. 가까운 것부터 천천히 확인해 보세요.",
-          imageUrl: "/images/hero-apartment-night.jpg",
+          imageUrl: "/images/hero-apartment-dusk.jpg",
         },
       },
       {
