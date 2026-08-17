@@ -18,6 +18,14 @@ interface PlInquiryFormProps {
   }) => Promise<void>;
 }
 
+function chipLabel(name: string, areaSqm?: number | null) {
+  if (!areaSqm) return name;
+  if (name.includes(String(areaSqm))) {
+    return name.replace(/\s*타입$/, "");
+  }
+  return `${areaSqm}㎡`;
+}
+
 export function PlInquiryForm({ legalNotices, unitTypes, phone, onSubmit }: PlInquiryFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -117,7 +125,7 @@ export function PlInquiryForm({ legalNotices, unitTypes, phone, onSubmit }: PlIn
                     checked={unitId === u.id}
                     onChange={() => setUnitId(u.id)}
                   />
-                  {u.areaSqm ? `${u.name.split(" ")[0]} • ${u.areaSqm}㎡` : u.name}
+                  {chipLabel(u.name, u.areaSqm)}
                 </label>
               ))}
             </div>
