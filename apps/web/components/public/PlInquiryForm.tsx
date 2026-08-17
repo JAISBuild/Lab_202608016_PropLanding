@@ -18,11 +18,6 @@ interface PlInquiryFormProps {
   }) => Promise<void>;
 }
 
-function chipLabel(name: string, areaSqm?: number | null) {
-  if (areaSqm == null || Number.isNaN(Number(areaSqm))) return name;
-  return `${Number(areaSqm)}㎡`;
-}
-
 export function PlInquiryForm({ legalNotices, unitTypes, phone, onSubmit }: PlInquiryFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -113,18 +108,21 @@ export function PlInquiryForm({ legalNotices, unitTypes, phone, onSubmit }: PlIn
           <fieldset className="pl-chips">
             <legend>관심 타입</legend>
             <div>
-              {unitTypes.map((u) => (
-                <label key={u.id} className={unitId === u.id ? "is-on" : ""}>
-                  <input
-                    type="radio"
-                    name="unitType"
-                    value={u.id}
-                    checked={unitId === u.id}
-                    onChange={() => setUnitId(u.id)}
-                  />
-                  {chipLabel(u.name, u.areaSqm)}
-                </label>
-              ))}
+              {unitTypes.map((u) => {
+                const area = u.areaSqm != null ? Math.round(Number(u.areaSqm)) : null;
+                return (
+                  <label key={u.id} className={unitId === u.id ? "is-on" : undefined}>
+                    <input
+                      type="radio"
+                      name="unitType"
+                      value={u.id}
+                      checked={unitId === u.id}
+                      onChange={() => setUnitId(u.id)}
+                    />
+                    <span>{area != null ? `${area}㎡` : u.name}</span>
+                  </label>
+                );
+              })}
             </div>
           </fieldset>
         ) : null}
