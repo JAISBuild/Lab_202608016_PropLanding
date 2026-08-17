@@ -6,9 +6,10 @@ interface PlHeroProps {
   headline: string;
   subheadline?: string;
   imageUrl?: string;
+  brandName?: string;
 }
 
-export function PlHero({ headline, subheadline, imageUrl }: PlHeroProps) {
+export function PlHero({ headline, subheadline, imageUrl, brandName }: PlHeroProps) {
   return (
     <section id="pl-section-hero" className="pl-hero">
       {imageUrl && (
@@ -25,8 +26,22 @@ export function PlHero({ headline, subheadline, imageUrl }: PlHeroProps) {
         </div>
       )}
       <div className="pl-hero__content">
-        <h1>{headline}</h1>
-        {subheadline && <p>{subheadline}</p>}
+        <div className="pl-container">
+          {brandName && <span className="pl-hero__eyebrow">{brandName}</span>}
+          <h1 className="pl-hero__title">{headline}</h1>
+          {subheadline && <p className="pl-hero__sub">{subheadline}</p>}
+          <div className="pl-hero__actions">
+            <a href="#pl-section-inquiry" className="pl-hero__cta pl-hero__cta--primary">
+              상담 신청
+            </a>
+            <a href="#pl-section-gallery" className="pl-hero__cta pl-hero__cta--ghost">
+              둘러보기
+            </a>
+          </div>
+        </div>
+      </div>
+      <div className="pl-hero__scroll" aria-hidden>
+        <span />
       </div>
     </section>
   );

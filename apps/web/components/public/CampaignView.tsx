@@ -10,6 +10,8 @@ import { PlUnitGrid } from "@/components/public/PlUnitGrid";
 import { PlStickyCta } from "@/components/public/PlStickyCta";
 import { PlInquiryForm } from "@/components/public/PlInquiryForm";
 import { PlReserveForm } from "@/components/public/PlReserveForm";
+import { PlSiteHeader } from "@/components/public/PlSiteHeader";
+import { PlSiteFooter } from "@/components/public/PlSiteFooter";
 import { submitInquiry, trackEvent } from "@/lib/api";
 import { getSessionKey, getUtmParams } from "@/lib/session";
 
@@ -65,6 +67,7 @@ export function CampaignView({ campaign, slug }: CampaignViewProps) {
 
   return (
     <div className="pl-campaign">
+      <PlSiteHeader title={campaign.title} phone={campaign.contactPhone} />
       {campaign.blocks.map((block) => {
         const p = block.payload;
         switch (block.type) {
@@ -72,6 +75,7 @@ export function CampaignView({ campaign, slug }: CampaignViewProps) {
             return (
               <PlHero
                 key={block.id}
+                brandName={campaign.title}
                 headline={String(p.headline ?? "")}
                 subheadline={p.subheadline ? String(p.subheadline) : undefined}
                 imageUrl={p.imageUrl ? String(p.imageUrl) : undefined}
@@ -113,9 +117,11 @@ export function CampaignView({ campaign, slug }: CampaignViewProps) {
             );
           case "raw_text":
             return (
-              <section key={block.id} className="pl-text-block">
-                {p.title ? <h2>{String(p.title)}</h2> : null}
-                <p>{String(p.body ?? "")}</p>
+              <section key={block.id} className="pl-section pl-benefits">
+                <div className="pl-container pl-benefits__inner">
+                  {p.title ? <span className="pl-benefits__eyebrow">{String(p.title)}</span> : null}
+                  <p className="pl-benefits__body">{String(p.body ?? "")}</p>
+                </div>
               </section>
             );
           default:
@@ -143,6 +149,8 @@ export function CampaignView({ campaign, slug }: CampaignViewProps) {
         unitTypes={campaign.unitTypes.map((u) => ({ id: u.id, name: u.name }))}
         onSubmit={handleInquiry}
       />
+
+      <PlSiteFooter title={campaign.title} phone={campaign.contactPhone} />
 
       <PlStickyCta
         phone={campaign.contactPhone}
