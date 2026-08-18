@@ -52,7 +52,7 @@ async function main() {
         type: "hero",
         sortOrder: 0,
         payload: {
-          headline: "머무는 방식이 강을 바꿉니다",
+          headline: "한강이 가까운 하루가 달라집니다",
           subheadline: "빛, 동선, 나만의 리듬이 머무는 한강 생활권. 가까운 것부터 천천히 확인해 보세요.",
           imageUrl: "/images/hero-apartment-dusk.jpg",
         },
