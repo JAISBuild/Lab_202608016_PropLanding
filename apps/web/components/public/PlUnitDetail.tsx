@@ -19,10 +19,15 @@ const SPEC_LABELS: Record<string, string> = {
 
 const LOCAL_FLOORPLANS: Record<string, string> = {
   "59a": "/images/floor-59a.jpg",
+  "84a": "/images/floor-84a.jpg",
 };
 
 function planSrc(unit: PublicUnitType) {
-  return LOCAL_FLOORPLANS[unit.code] ?? unit.floorplanUrl;
+  if (LOCAL_FLOORPLANS[unit.code]) return LOCAL_FLOORPLANS[unit.code];
+  const remote = unit.floorplanUrl;
+  if (!remote) return null;
+  if (remote.includes("localhost:4000") || remote.includes("127.0.0.1:4000")) return null;
+  return remote;
 }
 
 export function PlUnitDetail({ slug, unit }: PlUnitDetailProps) {
