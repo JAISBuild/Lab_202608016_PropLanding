@@ -3,16 +3,42 @@
   "remote.restoreForwardedPorts": true,
   "remote.autoForwardPortsSource": "hybrid",
   "remote.forwardOnOpen": true,
+  "remote.otherPortsAttributes": {
+    "onAutoForward": "silent"
+  },
   "remote.portsAttributes": {
     "3000": {
       "label": "리버사이드 힐스",
       "protocol": "http",
-      "onAutoForward": "openPreview"
+      "onAutoForward": "openPreview",
+      "requireLocalPort": true
+    },
+    "3010": {
+      "label": "리버사이드 힐스 미리보기",
+      "protocol": "http",
+      "onAutoForward": "openPreview",
+      "requireLocalPort": true
+    },
+    "4000": {
+      "onAutoForward": "silent"
+    },
+    "2375": {
+      "onAutoForward": "ignore"
+    },
+    "5432": {
+      "onAutoForward": "ignore"
     }
   },
+  "workbench.browser.newTabPlacement": "sideGroup",
+  "workbench.browser.openLocalhostLinks": true,
+  "workbench.browser.enableRemoteProxy": true,
+  "workbench.browser.dataStorage": "workspace",
+  "workbench.editor.openSideBySideDirection": "right",
   "workbench.externalUriOpeners": {
     "http://localhost:3000": "simpleBrowser.open",
+    "http://localhost:3010": "simpleBrowser.open",
     "http://127.0.0.1:3000": "simpleBrowser.open",
+    "http://127.0.0.1:3010": "simpleBrowser.open",
     "http://0.0.0.0:3000": "simpleBrowser.open",
     "http://localhost:*": "simpleBrowser.open",
     "https://*.trycloudflare.com": "simpleBrowser.open"
