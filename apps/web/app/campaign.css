@@ -645,9 +645,15 @@
   min-height: 42rem;
 }
 
-.pl-life__wide img,
-.pl-life__plain img,
-.pl-life__spaces img {
+.pl-life__plain {
+  display: flex;
+  flex-direction: column;
+  background: var(--pl-cream-2);
+  padding: 0.55rem;
+  min-height: 0;
+}
+
+.pl-life__wide img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -657,26 +663,29 @@
 
 .pl-life__spaces {
   display: grid;
-  grid-template-columns: 1.12fr 1fr 0.96fr;
-  position: absolute;
-  inset: 0;
-  min-height: 16rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .pl-life__spaces figure {
   position: relative;
   margin: 0;
   min-height: 0;
-  height: 100%;
   overflow: hidden;
+  border-radius: 0.85rem;
+  background: #d8d2c8;
 }
 
 .pl-life__spaces img {
-  min-height: 0;
-}
-
-.pl-life__spaces figure + figure {
-  box-shadow: inset 1px 0 0 rgba(27, 19, 40, 0.12);
+  width: 100%;
+  height: auto;
+  min-height: 16rem;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  display: block;
 }
 
 .pl-life__spaces figcaption {
@@ -1006,7 +1015,10 @@ html.pl-sun-full .pl-header {
 }
 
 .pl-life__panel--plain {
-  background: linear-gradient(transparent, rgba(246, 244, 238, 0.96) 32%);
+  position: relative;
+  inset: auto;
+  padding: 1rem 0.55rem 0.45rem;
+  background: none;
   color: var(--pl-ink);
 }
 
@@ -1171,11 +1183,25 @@ html.pl-sun-full .pl-header {
 
   .pl-life__grid {
     grid-template-columns: 1.3fr 1fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: minmax(42rem, auto) auto;
   }
 
   .pl-life__wide {
-    grid-row: 1 / span 2;
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  .pl-life__dark {
+    grid-row: 1;
+    grid-column: 2;
+  }
+
+  .pl-life__plain {
+    grid-column: 1 / -1;
+  }
+
+  .pl-life__spaces img {
+    min-height: 22rem;
   }
 }
 
