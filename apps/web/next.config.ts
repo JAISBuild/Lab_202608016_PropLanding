@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   allowedDevOrigins: ["*.trycloudflare.com", "localhost", "127.0.0.1"],
+  async redirects() {
+    return [{ source: "/", destination: "/c/riverside", permanent: false }];
+  },
   async rewrites() {
     return [
       {
