@@ -630,7 +630,7 @@
 }
 
 .pl-life__wide,
-.pl-life__dark,
+.pl-life__soft,
 .pl-life__plain {
   position: relative;
   min-height: 16rem;
@@ -1022,12 +1022,13 @@ html.pl-sun-full .pl-header {
   color: var(--pl-ink);
 }
 
-.pl-life__dark {
+.pl-life__soft {
   display: flex;
   flex-direction: column;
   padding: 1.15rem 1.15rem 1rem;
-  background: var(--pl-ink);
-  color: #fff;
+  background: var(--pl-white);
+  color: var(--pl-ink);
+  box-shadow: var(--pl-shadow-sm);
 }
 
 .pl-life__tags {
@@ -1042,137 +1043,88 @@ html.pl-sun-full .pl-header {
 .pl-life__tags li {
   padding: 0.28rem 0.55rem;
   border-radius: 999px;
-  background: rgba(200, 235, 74, 0.16);
-  color: var(--pl-lime);
+  background: rgba(200, 235, 74, 0.28);
+  color: #3d5a12;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.02em;
 }
 
 .pl-smarthome {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  flex: 1;
+  margin-top: 0.9rem;
+}
+
+.pl-smarthome__photos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.pl-smarthome__photos figure {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 0.85rem;
+  background: #ece7dc;
+}
+
+.pl-smarthome__photos img {
   display: block;
   width: 100%;
-  flex: 1;
-  min-height: 12rem;
-  margin-top: auto;
+  height: 11.5rem;
+  object-fit: cover;
 }
 
-.pl-smarthome__kicker {
-  fill: var(--pl-lime);
-  font-family: var(--pl-font-sans);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-}
-
-.pl-smarthome__slab {
-  fill: rgba(255, 255, 255, 0.04);
-  stroke: rgba(255, 255, 255, 0.12);
-  stroke-width: 1;
-}
-
-.pl-smarthome text {
-  font-family: var(--pl-font-sans);
+.pl-smarthome__photos figcaption {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--pl-ink);
   font-size: 10px;
-  font-weight: 700;
-  text-anchor: middle;
-  fill: rgba(255, 255, 255, 0.86);
+  font-weight: 800;
+  letter-spacing: 0.02em;
 }
 
-.pl-smarthome__sub {
-  font-size: 8px;
-  font-weight: 600;
-  fill: rgba(255, 255, 255, 0.5);
+.pl-smarthome__list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem 0.7rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.pl-smarthome__pad rect {
-  fill: rgba(200, 235, 74, 0.14);
-  stroke: var(--pl-lime);
-  stroke-width: 1.2;
+.pl-smarthome__list li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  padding: 0.65rem 0.7rem;
+  border-radius: 0.75rem;
+  background: var(--pl-cream);
 }
 
-.pl-smarthome__pad .pl-smarthome__screen {
-  fill: #121018;
-  stroke: rgba(200, 235, 74, 0.45);
+.pl-smarthome__list b {
+  color: var(--pl-ink);
+  font-size: 12px;
+  font-weight: 800;
 }
 
-.pl-smarthome__pad circle {
-  fill: var(--pl-lime);
-}
-
-.pl-smarthome__wire {
-  fill: none;
-  stroke: rgba(200, 235, 74, 0.55);
-  stroke-width: 1.4;
-}
-
-.pl-smarthome__node rect {
-  fill: rgba(255, 255, 255, 0.05);
-  stroke: rgba(255, 255, 255, 0.18);
-  stroke-width: 1;
-}
-
-.pl-smarthome__node--hot rect {
-  fill: rgba(200, 235, 74, 0.16);
-  stroke: var(--pl-lime);
-}
-
-.pl-smarthome__room > rect:first-child {
-  fill: rgba(255, 255, 255, 0.03);
-  stroke: rgba(255, 255, 255, 0.16);
-}
-
-.pl-smarthome__room .pl-smarthome__window {
-  fill: rgba(183, 213, 229, 0.22);
-  stroke: rgba(183, 213, 229, 0.45);
-}
-
-.pl-smarthome__sensor {
-  fill: var(--pl-lime);
-}
-
-.pl-smarthome__room .pl-smarthome__furn {
-  fill: rgba(255, 255, 255, 0.08);
-  stroke: none;
-}
-
-.pl-smarthome__ramp {
-  fill: rgba(255, 255, 255, 0.08);
-  stroke: rgba(255, 255, 255, 0.2);
-}
-
-.pl-smarthome__guide {
-  fill: none;
-  stroke: var(--pl-lime);
-  stroke-width: 1.6;
-  stroke-dasharray: 5 4;
-}
-
-.pl-smarthome__stall rect {
-  fill: rgba(255, 255, 255, 0.05);
-  stroke: rgba(255, 255, 255, 0.2);
-}
-
-.pl-smarthome__stall--open rect {
-  fill: rgba(200, 235, 74, 0.18);
-  stroke: var(--pl-lime);
-}
-
-.pl-smarthome__stall--ev rect {
-  fill: rgba(183, 213, 229, 0.18);
-  stroke: #9ec4d6;
-}
-
-.pl-smarthome__bolt {
-  fill: none;
-  stroke: #c8eb4a;
-  stroke-width: 1.6;
-  stroke-linejoin: round;
-  stroke-linecap: round;
+.pl-smarthome__list span {
+  color: var(--pl-muted);
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 500;
 }
 
 .pl-life__wide p,
-.pl-life__dark p,
+.pl-life__soft p,
 .pl-life__plain p,
 .pl-life__panel p {
   color: var(--pl-lime);
@@ -1193,12 +1145,12 @@ html.pl-sun-full .pl-header {
   color: #4e7014;
 }
 
-.pl-life__dark p {
-  color: var(--pl-lime);
+.pl-life__soft p {
+  color: #4e7014;
 }
 
 .pl-life__wide h3,
-.pl-life__dark h3,
+.pl-life__soft h3,
 .pl-life__plain h3,
 .pl-life__panel h3 {
   margin: 0.45rem 0 0.7rem;
@@ -1207,7 +1159,7 @@ html.pl-sun-full .pl-header {
 }
 
 .pl-life__wide small,
-.pl-life__dark small,
+.pl-life__soft small,
 .pl-life__plain small,
 .pl-life__panel small {
   display: block;
@@ -1221,8 +1173,8 @@ html.pl-sun-full .pl-header {
   color: var(--pl-muted);
 }
 
-.pl-life__dark small {
-  color: rgba(255, 255, 255, 0.68);
+.pl-life__soft small {
+  color: var(--pl-muted);
 }
 
 @media (min-width: 900px) {
@@ -1241,7 +1193,7 @@ html.pl-sun-full .pl-header {
     grid-column: 1;
   }
 
-  .pl-life__dark {
+  .pl-life__soft {
     grid-row: 1;
     grid-column: 2;
   }
@@ -1252,6 +1204,10 @@ html.pl-sun-full .pl-header {
 
   .pl-life__spaces img {
     min-height: 22rem;
+  }
+
+  .pl-smarthome__photos img {
+    height: 14.5rem;
   }
 }
 

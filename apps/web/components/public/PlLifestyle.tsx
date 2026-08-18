@@ -28,19 +28,13 @@ export function PlLifestyle() {
               </small>
             </div>
           </article>
-          <article className="pl-life__dark">
+          <article className="pl-life__soft">
             <p>02 / SMART HOME</p>
             <h3>집 안과 지하가 한 화면.</h3>
             <small>
               월패드로 조명·환기·난방을 보고, 지하에서는 빈 자리와 전기차 충전을 안내합니다. 타입별 평면은 위에서
               고르면 됩니다.
             </small>
-            <ul className="pl-life__tags">
-              <li>01 월패드</li>
-              <li>02 공기질</li>
-              <li>03 주차유도</li>
-              <li>04 전기차 충전</li>
-            </ul>
             <PlSmartHome />
           </article>
           <article className="pl-life__plain">
