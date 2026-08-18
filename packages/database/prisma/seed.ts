@@ -97,7 +97,7 @@ async function main() {
     update: {
       name: "59㎡ A타입",
       areaSqm: 59,
-      specs: { rooms: "방 3", baths: "욕실 2", tagline: "컴팩트한 3Bay 판상형", note: "실거주 선호 타입" },
+      specs: { rooms: "방 3", baths: "욕실 2", tagline: "확장형 4Bay 판상형", note: "실거주 선호 타입" },
       sortOrder: 0,
     },
     create: {
@@ -105,7 +105,7 @@ async function main() {
       code: "59a",
       name: "59㎡ A타입",
       areaSqm: 59,
-      specs: { rooms: "방 3", baths: "욕실 2", tagline: "컴팩트한 3Bay 판상형", note: "실거주 선호 타입" },
+      specs: { rooms: "방 3", baths: "욕실 2", tagline: "확장형 4Bay 판상형", note: "실거주 선호 타입" },
       sortOrder: 0,
     },
   });
