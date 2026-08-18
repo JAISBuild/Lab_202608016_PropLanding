@@ -1117,12 +1117,12 @@ html.pl-sun-full .pl-header {
   stroke: var(--pl-lime);
 }
 
-.pl-smarthome__room rect {
+.pl-smarthome__room > rect:first-child {
   fill: rgba(255, 255, 255, 0.03);
   stroke: rgba(255, 255, 255, 0.16);
 }
 
-.pl-smarthome__window {
+.pl-smarthome__room .pl-smarthome__window {
   fill: rgba(183, 213, 229, 0.22);
   stroke: rgba(183, 213, 229, 0.45);
 }
@@ -1131,7 +1131,7 @@ html.pl-sun-full .pl-header {
   fill: var(--pl-lime);
 }
 
-.pl-smarthome__furn {
+.pl-smarthome__room .pl-smarthome__furn {
   fill: rgba(255, 255, 255, 0.08);
   stroke: none;
 }
