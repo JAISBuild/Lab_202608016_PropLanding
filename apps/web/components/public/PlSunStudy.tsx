@@ -155,8 +155,12 @@ export function PlSunStudy() {
         if (compassRef.current) {
           compassRef.current.style.transform = `rotate(${theta}rad)`;
         }
-        if (tiltRef.current && document.activeElement !== tiltRef.current) {
-          tiltRef.current.value = String(phi);
+        if (tiltRef.current) {
+          if (document.activeElement !== tiltRef.current) {
+            tiltRef.current.value = String(phi);
+          }
+          const fill = ((phi - PHI_MIN) / (PHI_MAX - PHI_MIN)) * 100;
+          tiltRef.current.style.setProperty("--fill", `${fill.toFixed(2)}%`);
         }
       };
       placeCamera();
@@ -600,8 +604,11 @@ export function PlSunStudy() {
         }
         if (timeRef.current) timeRef.current.textContent = formatClock(t);
         if (phaseRef.current) phaseRef.current.textContent = formatPhase(t, elevation);
-        if (sliderRef.current && document.activeElement !== sliderRef.current) {
-          sliderRef.current.value = String(t);
+        if (sliderRef.current) {
+          if (document.activeElement !== sliderRef.current) {
+            sliderRef.current.value = String(t);
+          }
+          sliderRef.current.style.setProperty("--fill", `${(t * 100).toFixed(2)}%`);
         }
       };
 
@@ -783,6 +790,7 @@ export function PlSunStudy() {
             }}
             onChange={(e) => {
               dayTRef.current = Number(e.target.value);
+              e.currentTarget.style.setProperty("--fill", `${(Number(e.target.value) * 100).toFixed(2)}%`);
             }}
           />
           <span>16시</span>
@@ -798,7 +806,10 @@ export function PlSunStudy() {
             defaultValue={0.38}
             aria-label="남북 카메라 각도"
             onChange={(e) => {
-              orbitRef.current.phi = Number(e.target.value);
+              const phi = Number(e.target.value);
+              orbitRef.current.phi = phi;
+              const fill = ((phi - PHI_MIN) / (PHI_MAX - PHI_MIN)) * 100;
+              e.currentTarget.style.setProperty("--fill", `${fill.toFixed(2)}%`);
             }}
           />
         </label>
