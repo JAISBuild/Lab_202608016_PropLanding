@@ -20,6 +20,7 @@ const SPEC_LABELS: Record<string, string> = {
 const LOCAL_FLOORPLANS: Record<string, string> = {
   "59a": "/images/floor-59a.jpg",
   "84a": "/images/floor-84a.jpg",
+  "101b": "/images/floor-101b.jpg",
 };
 
 function planSrc(unit: PublicUnitType) {
