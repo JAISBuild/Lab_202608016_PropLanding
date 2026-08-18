@@ -1049,76 +1049,126 @@ html.pl-sun-full .pl-header {
   letter-spacing: 0.02em;
 }
 
-.pl-roomplan {
+.pl-smarthome {
   display: block;
   width: 100%;
   flex: 1;
-  min-height: 10.5rem;
+  min-height: 12rem;
   margin-top: auto;
 }
 
-.pl-roomplan__floor {
+.pl-smarthome__kicker {
+  fill: var(--pl-lime);
+  font-family: var(--pl-font-sans);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.pl-smarthome__slab {
   fill: rgba(255, 255, 255, 0.04);
-  stroke: rgba(255, 255, 255, 0.16);
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 1;
+}
+
+.pl-smarthome text {
+  font-family: var(--pl-font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  text-anchor: middle;
+  fill: rgba(255, 255, 255, 0.86);
+}
+
+.pl-smarthome__sub {
+  font-size: 8px;
+  font-weight: 600;
+  fill: rgba(255, 255, 255, 0.5);
+}
+
+.pl-smarthome__pad rect {
+  fill: rgba(200, 235, 74, 0.14);
+  stroke: var(--pl-lime);
   stroke-width: 1.2;
 }
 
-.pl-roomplan__room rect,
-.pl-roomplan__hot rect {
-  stroke-width: 1.1;
+.pl-smarthome__pad .pl-smarthome__screen {
+  fill: #121018;
+  stroke: rgba(200, 235, 74, 0.45);
 }
 
-.pl-roomplan__room rect {
-  fill: rgba(255, 255, 255, 0.05);
-  stroke: rgba(255, 255, 255, 0.22);
-}
-
-.pl-roomplan__hot rect {
-  fill: rgba(200, 235, 74, 0.2);
-  stroke: var(--pl-lime);
-}
-
-.pl-roomplan text {
-  fill: rgba(255, 255, 255, 0.78);
-  font-family: var(--pl-font-sans);
-  font-size: 11px;
-  font-weight: 700;
-  text-anchor: middle;
-}
-
-.pl-roomplan__hot text {
+.pl-smarthome__pad circle {
   fill: var(--pl-lime);
 }
 
-.pl-roomplan__no {
-  font-size: 9px;
-  letter-spacing: 0.08em;
+.pl-smarthome__wire {
+  fill: none;
+  stroke: rgba(200, 235, 74, 0.55);
+  stroke-width: 1.4;
 }
 
-.pl-roomplan__furn {
-  fill: rgba(255, 255, 255, 0.1);
+.pl-smarthome__node rect {
+  fill: rgba(255, 255, 255, 0.05);
+  stroke: rgba(255, 255, 255, 0.18);
+  stroke-width: 1;
+}
+
+.pl-smarthome__node--hot rect {
+  fill: rgba(200, 235, 74, 0.16);
+  stroke: var(--pl-lime);
+}
+
+.pl-smarthome__room rect {
+  fill: rgba(255, 255, 255, 0.03);
+  stroke: rgba(255, 255, 255, 0.16);
+}
+
+.pl-smarthome__window {
+  fill: rgba(183, 213, 229, 0.22);
+  stroke: rgba(183, 213, 229, 0.45);
+}
+
+.pl-smarthome__sensor {
+  fill: var(--pl-lime);
+}
+
+.pl-smarthome__furn {
+  fill: rgba(255, 255, 255, 0.08);
   stroke: none;
 }
 
-.pl-roomplan__balcony {
+.pl-smarthome__ramp {
+  fill: rgba(255, 255, 255, 0.08);
+  stroke: rgba(255, 255, 255, 0.2);
+}
+
+.pl-smarthome__guide {
   fill: none;
-  stroke: rgba(200, 235, 74, 0.55);
-  stroke-dasharray: 4 3;
-  stroke-width: 1.1;
+  stroke: var(--pl-lime);
+  stroke-width: 1.6;
+  stroke-dasharray: 5 4;
 }
 
-.pl-roomplan__cap {
-  fill: rgba(200, 235, 74, 0.85);
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+.pl-smarthome__stall rect {
+  fill: rgba(255, 255, 255, 0.05);
+  stroke: rgba(255, 255, 255, 0.2);
 }
 
-.pl-roomplan__meta {
-  fill: rgba(255, 255, 255, 0.4);
-  font-size: 9px;
-  font-weight: 800;
-  text-anchor: end;
+.pl-smarthome__stall--open rect {
+  fill: rgba(200, 235, 74, 0.18);
+  stroke: var(--pl-lime);
+}
+
+.pl-smarthome__stall--ev rect {
+  fill: rgba(183, 213, 229, 0.18);
+  stroke: #9ec4d6;
+}
+
+.pl-smarthome__bolt {
+  fill: none;
+  stroke: #c8eb4a;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
 .pl-life__wide p,

@@ -1,5 +1,5 @@
 import { PlMark } from "./PlMark";
-import { PlRoomPlan } from "./PlRoomPlan";
+import { PlSmartHome } from "./PlSmartHome";
 import { PlSunStudy } from "./PlSunStudy";
 
 export function PlLifestyle() {
@@ -29,15 +29,19 @@ export function PlLifestyle() {
             </div>
           </article>
           <article className="pl-life__dark">
-            <p>02 / YOUR ROOM</p>
-            <h3>나만의 집중과 회복을 위한 공간.</h3>
-            <small>팬트리·알파룸·개인수납을 타입 평면에 먼저 표시해, 수납과 집중 공간이 어디에 붙는지 바로 보이게 합니다.</small>
+            <p>02 / SMART HOME</p>
+            <h3>집 안과 지하가 한 화면.</h3>
+            <small>
+              월패드로 조명·환기·난방을 보고, 지하에서는 빈 자리와 전기차 충전을 안내합니다. 타입별 평면은 위에서
+              고르면 됩니다.
+            </small>
             <ul className="pl-life__tags">
-              <li>01 팬트리</li>
-              <li>02 알파룸</li>
-              <li>03 개인수납</li>
+              <li>01 월패드</li>
+              <li>02 공기질</li>
+              <li>03 주차유도</li>
+              <li>04 전기차 충전</li>
             </ul>
-            <PlRoomPlan />
+            <PlSmartHome />
           </article>
           <article className="pl-life__plain">
             <div className="pl-life__spaces">
