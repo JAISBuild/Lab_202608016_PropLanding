@@ -101,7 +101,7 @@ export function PlSunStudy() {
   const compassRef = useRef<HTMLDivElement>(null);
   const playingRef = useRef(true);
   const dayTRef = useRef(0.35);
-  const orbitRef = useRef({ theta: 0.58, phi: 0.36, radius: 860 });
+  const orbitRef = useRef({ theta: 0.72, phi: 0.4, radius: 1080 });
   const [playing, setPlaying] = useState(true);
   const [full, setFull] = useState(false);
 
@@ -146,7 +146,7 @@ export function PlSunStudy() {
       const scene = new THREE.Scene();
       scene.fog = new THREE.Fog(0x9eb7c9, 980, 2400);
 
-      const camera = new THREE.PerspectiveCamera(32, 1, 2, 4200);
+      const camera = new THREE.PerspectiveCamera(34, 1, 2, 4200);
       const look = new THREE.Vector3(8, 4, 16);
 
       const placeCamera = () => {
@@ -798,7 +798,7 @@ export function PlSunStudy() {
             min={PHI_MIN}
             max={PHI_MAX}
             step={0.01}
-            defaultValue={0.36}
+            defaultValue={0.4}
             aria-label="남북 카메라 각도"
             onChange={(e) => {
               orbitRef.current.phi = Number(e.target.value);
