@@ -43,17 +43,17 @@ export function PlLifestyle() {
             <div className="pl-life__spaces">
               <figure>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/images/life-living.jpg" alt="입주민 생활공간" />
+                <img src="/images/life-living.jpg" alt="이웃이 함께 앉는 커뮤니티 생활공간" />
                 <figcaption>생활공간</figcaption>
               </figure>
               <figure>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/images/life-lounge.jpg" alt="입주민 라운지" />
+                <img src="/images/life-lounge.jpg" alt="커피를 마시며 머무는 입주민 라운지" />
                 <figcaption>라운지</figcaption>
               </figure>
               <figure>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/images/life-library.jpg" alt="작은 도서관" />
+                <img src="/images/life-library.jpg" alt="책장이 가득한 단지 작은도서관" />
                 <figcaption>작은도서관</figcaption>
               </figure>
             </div>
