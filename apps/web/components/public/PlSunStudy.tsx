@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-type Tone = "ivory" | "warm";
+type Kind = "ell" | "tee" | "plate";
 
 type Mass = {
   name: string;
@@ -12,95 +12,30 @@ type Mass = {
   d: number;
   h: number;
   floors: number;
-  yaw: number;
-  kind: "plate" | "tower" | "ell";
-  tone: Tone;
+  kind: Kind;
+  mirror?: boolean;
   wing?: { w: number; d: number };
 };
 
-const ORTHO_SRC = "/images/sun-study-ortho.jpg";
 const DAY_MS = 22000;
 const HOUR_START = 8;
 const HOUR_SPAN = 8;
-const PHI_MIN = 0.22;
-const PHI_MAX = 1.28;
-const RADIUS_MIN = 108;
-const RADIUS_MAX = 360;
+const PHI_MIN = 0.18;
+const PHI_MAX = 1.22;
+const RADIUS_MIN = 140;
+const RADIUS_MAX = 420;
 
 const DONGS: Mass[] = [
-  {
-    name: "101동",
-    x: -46,
-    z: -40,
-    w: 58,
-    d: 13.5,
-    h: 74,
-    floors: 25,
-    yaw: 0.22,
-    kind: "ell",
-    tone: "ivory",
-    wing: { w: 13.5, d: 34 },
-  },
-  {
-    name: "102동",
-    x: 48,
-    z: -42,
-    w: 21,
-    d: 23,
-    h: 96,
-    floors: 34,
-    yaw: -0.38,
-    kind: "tower",
-    tone: "warm",
-  },
-  {
-    name: "103동",
-    x: -58,
-    z: 6,
-    w: 64,
-    d: 13,
-    h: 66,
-    floors: 22,
-    yaw: 1.52,
-    kind: "plate",
-    tone: "ivory",
-  },
-  {
-    name: "104동",
-    x: 54,
-    z: 4,
-    w: 56,
-    d: 13,
-    h: 78,
-    floors: 26,
-    yaw: -1.46,
-    kind: "plate",
-    tone: "warm",
-  },
-  {
-    name: "105동",
-    x: -36,
-    z: 44,
-    w: 76,
-    d: 13.5,
-    h: 58,
-    floors: 19,
-    yaw: 0.06,
-    kind: "plate",
-    tone: "ivory",
-  },
-  {
-    name: "106동",
-    x: 46,
-    z: 42,
-    w: 20,
-    d: 24,
-    h: 84,
-    floors: 29,
-    yaw: 0.48,
-    kind: "tower",
-    tone: "warm",
-  },
+  { name: "101동", x: 10, z: -64, w: 46, d: 14, h: 78, floors: 26, kind: "ell", wing: { w: 14, d: 32 } },
+  { name: "102동", x: 46, z: -46, w: 44, d: 14, h: 90, floors: 30, kind: "tee", wing: { w: 15, d: 30 } },
+  { name: "103동", x: 68, z: -8, w: 48, d: 14, h: 96, floors: 32, kind: "ell", wing: { w: 14, d: 34 } },
+  { name: "104동", x: 60, z: 32, w: 42, d: 14, h: 84, floors: 28, kind: "ell", mirror: true, wing: { w: 14, d: 30 } },
+  { name: "105동", x: 28, z: 58, w: 50, d: 14, h: 72, floors: 24, kind: "tee", wing: { w: 14, d: 28 } },
+  { name: "106동", x: -10, z: 62, w: 44, d: 14, h: 66, floors: 22, kind: "ell", wing: { w: 14, d: 26 } },
+  { name: "107동", x: -44, z: 46, w: 46, d: 14, h: 75, floors: 25, kind: "ell", mirror: true, wing: { w: 14, d: 30 } },
+  { name: "108동", x: -68, z: 6, w: 48, d: 14, h: 88, floors: 29, kind: "tee", wing: { w: 15, d: 32 } },
+  { name: "109동", x: -58, z: -34, w: 44, d: 14, h: 81, floors: 27, kind: "ell", wing: { w: 14, d: 32 } },
+  { name: "110동", x: -26, z: -62, w: 42, d: 14, h: 72, floors: 24, kind: "ell", mirror: true, wing: { w: 14, d: 28 } },
 ];
 
 function clamp(n: number, a: number, b: number) {
@@ -133,6 +68,15 @@ function formatPhase(t: number, elevation: number) {
   return `서향 일조 · 고도 ${deg}°`;
 }
 
+function seeded(seed: number) {
+  let s = seed % 2147483647;
+  if (s <= 0) s += 2147483646;
+  return () => {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
 export function PlSunStudy() {
   const rootRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
@@ -143,7 +87,7 @@ export function PlSunStudy() {
   const compassRef = useRef<HTMLDivElement>(null);
   const playingRef = useRef(true);
   const dayTRef = useRef(0.35);
-  const orbitRef = useRef({ theta: 0.34, phi: 0.9, radius: 198 });
+  const orbitRef = useRef({ theta: 0.22, phi: 0.58, radius: 248 });
   const [playing, setPlaying] = useState(true);
   const [full, setFull] = useState(false);
 
@@ -186,16 +130,16 @@ export function PlSunStudy() {
       if (disposed || !hostRef.current) return;
 
       const scene = new THREE.Scene();
-      scene.fog = new THREE.Fog(0x9eb7c9, 240, 560);
+      scene.fog = new THREE.Fog(0x9eb7c9, 320, 740);
 
-      const camera = new THREE.PerspectiveCamera(40, 1, 0.5, 900);
-      const look = new THREE.Vector3(0, 18, 6);
+      const camera = new THREE.PerspectiveCamera(38, 1, 0.8, 1200);
+      const look = new THREE.Vector3(0, 10, 4);
 
       const placeCamera = () => {
         const { theta, phi, radius } = orbitRef.current;
         camera.position.set(
           Math.sin(theta) * Math.sin(phi) * radius,
-          Math.cos(phi) * radius + 10,
+          Math.cos(phi) * radius + 16,
           Math.cos(theta) * Math.sin(phi) * radius,
         );
         camera.lookAt(look);
@@ -218,91 +162,245 @@ export function PlSunStudy() {
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.08;
+      renderer.toneMappingExposure = 1.12;
       host.appendChild(renderer.domElement);
       renderer.domElement.setAttribute("aria-hidden", "true");
 
-      const hemi = new THREE.HemisphereLight(0xd7e8ff, 0x6d5c4c, 0.58);
+      const hemi = new THREE.HemisphereLight(0xd7e8ff, 0x5d6a52, 0.62);
       scene.add(hemi);
-      scene.add(new THREE.AmbientLight(0xffffff, 0.2));
+      scene.add(new THREE.AmbientLight(0xffffff, 0.22));
 
-      const sunLight = new THREE.DirectionalLight(0xfff1d0, 2.2);
+      const sunLight = new THREE.DirectionalLight(0xfff1d0, 2.25);
       sunLight.castShadow = true;
       sunLight.shadow.mapSize.set(2048, 2048);
-      sunLight.shadow.bias = -0.00032;
-      sunLight.shadow.normalBias = 0.032;
-      const shadowSpan = 140;
+      sunLight.shadow.bias = -0.00028;
+      sunLight.shadow.normalBias = 0.036;
+      const shadowSpan = 190;
       sunLight.shadow.camera.left = -shadowSpan;
       sunLight.shadow.camera.right = shadowSpan;
       sunLight.shadow.camera.top = shadowSpan;
       sunLight.shadow.camera.bottom = -shadowSpan;
-      sunLight.shadow.camera.near = 10;
-      sunLight.shadow.camera.far = 460;
+      sunLight.shadow.camera.near = 12;
+      sunLight.shadow.camera.far = 560;
       scene.add(sunLight);
       scene.add(sunLight.target);
 
       const sunMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(3.4, 24, 24),
+        new THREE.SphereGeometry(3.6, 24, 24),
         new THREE.MeshBasicMaterial({ color: 0xfff4c8 }),
       );
       scene.add(sunMesh);
 
-      const groundMat = new THREE.MeshLambertMaterial({ color: 0x7fa36a });
-      const ground = new THREE.Mesh(new THREE.PlaneGeometry(240, 180), groundMat);
-      ground.rotation.x = -Math.PI / 2;
-      ground.receiveShadow = true;
-      scene.add(ground);
+      const shadowed = (mesh: import("three").Mesh) => {
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        return mesh;
+      };
 
-      new THREE.TextureLoader().load(ORTHO_SRC, (tex) => {
-        tex.colorSpace = THREE.SRGBColorSpace;
-        tex.anisotropy = 8;
-        groundMat.map = tex;
-        groundMat.color.set(0xffffff);
-        groundMat.needsUpdate = true;
+      const grass = new THREE.MeshLambertMaterial({ color: 0x6f9a58 });
+      const lawn = new THREE.MeshLambertMaterial({ color: 0x86b45f });
+      const pathMat = new THREE.MeshLambertMaterial({ color: 0xd9cbb3 });
+      const water = new THREE.MeshPhongMaterial({
+        color: 0x8ec8d8,
+        shininess: 42,
+        specular: 0xb8e0ea,
+      });
+      const asphalt = new THREE.MeshLambertMaterial({ color: 0x4b5056 });
+      const forestFloor = new THREE.MeshLambertMaterial({ color: 0x3d5a38 });
+      const white = new THREE.MeshLambertMaterial({ color: 0xf2f5f8 });
+      const glass = new THREE.MeshLambertMaterial({ color: 0x8aa0ac });
+      const stone = new THREE.MeshLambertMaterial({ color: 0x8b969f });
+      const roofHouse = new THREE.MeshLambertMaterial({ color: 0x8a8f93 });
+      const wallHouse = new THREE.MeshLambertMaterial({ color: 0xd8d4cc });
+      const bark = new THREE.MeshLambertMaterial({ color: 0x6a5340 });
+      const leaf = new THREE.MeshLambertMaterial({ color: 0x4f7a3c });
+      const blossom = new THREE.MeshLambertMaterial({ color: 0xe59ab3 });
+      const sand = new THREE.MeshLambertMaterial({ color: 0xd8b57a });
+      const court = new THREE.MeshLambertMaterial({ color: 0x3f7d5e });
+      const playAccent = new THREE.MeshLambertMaterial({ color: 0xe07a5a });
+
+      const site = new THREE.Mesh(new THREE.CircleGeometry(132, 64), grass);
+      site.rotation.x = -Math.PI / 2;
+      site.scale.set(1.18, 1, 1.02);
+      site.receiveShadow = true;
+      scene.add(site);
+
+      const hill = shadowed(new THREE.Mesh(new THREE.BoxGeometry(170, 10, 58), forestFloor));
+      hill.position.set(-28, 3.2, -118);
+      hill.rotation.z = 0.05;
+      hill.rotation.x = -0.08;
+      scene.add(hill);
+      const hillW = shadowed(new THREE.Mesh(new THREE.BoxGeometry(54, 12, 150), forestFloor));
+      hillW.position.set(-118, 4, -20);
+      hillW.rotation.z = 0.12;
+      scene.add(hillW);
+
+      const southRoad = new THREE.Mesh(new THREE.PlaneGeometry(320, 26), asphalt);
+      southRoad.rotation.x = -Math.PI / 2;
+      southRoad.position.set(18, 0.04, 96);
+      southRoad.receiveShadow = true;
+      scene.add(southRoad);
+      const eastRoad = new THREE.Mesh(new THREE.PlaneGeometry(26, 280), asphalt);
+      eastRoad.rotation.x = -Math.PI / 2;
+      eastRoad.position.set(108, 0.05, 8);
+      eastRoad.receiveShadow = true;
+      scene.add(eastRoad);
+
+      for (let i = 0; i < 6; i += 1) {
+        const stripe = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 10), white);
+        stripe.rotation.x = -Math.PI / 2;
+        stripe.position.set(96 + i * 2.2, 0.07, 96);
+        scene.add(stripe);
+      }
+
+      const dropoff = new THREE.Mesh(new THREE.CylinderGeometry(16, 16, 0.35, 40), pathMat);
+      dropoff.position.set(8, 0.2, 72);
+      dropoff.scale.set(1.35, 1, 0.72);
+      dropoff.receiveShadow = true;
+      scene.add(dropoff);
+
+      const lawnPad = new THREE.Mesh(new THREE.CylinderGeometry(18, 18, 0.28, 48), lawn);
+      lawnPad.position.set(0, 0.16, 8);
+      lawnPad.receiveShadow = true;
+      scene.add(lawnPad);
+
+      const pondA = new THREE.Mesh(new THREE.CircleGeometry(13, 36), water);
+      pondA.rotation.x = -Math.PI / 2;
+      pondA.scale.set(1.55, 1, 0.72);
+      pondA.position.set(8, 0.14, -16);
+      pondA.receiveShadow = true;
+      scene.add(pondA);
+      const pondB = new THREE.Mesh(new THREE.CircleGeometry(8, 28), water);
+      pondB.rotation.x = -Math.PI / 2;
+      pondB.scale.set(1.2, 1, 0.85);
+      pondB.position.set(-6, 0.15, -10);
+      scene.add(pondB);
+
+      const ring = new THREE.Mesh(new THREE.RingGeometry(21, 24.2, 48), pathMat);
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.y = 0.13;
+      scene.add(ring);
+
+      [
+        [0, 0, 52, 3.2, 0],
+        [0, 0, 3.2, 48, 0],
+        [18, -22, 28, 2.6, 0.5],
+        [-22, 20, 26, 2.6, -0.4],
+        [24, 28, 22, 2.4, 0.7],
+      ].forEach(([x, z, w, d, yaw]) => {
+        const walk = new THREE.Mesh(new THREE.BoxGeometry(w, 0.16, d), pathMat);
+        walk.position.set(x, 0.12, z);
+        walk.rotation.y = yaw;
+        walk.receiveShadow = true;
+        scene.add(walk);
       });
 
-      const plaza = new THREE.Mesh(
-        new THREE.CylinderGeometry(17, 17, 0.4, 48),
-        new THREE.MeshLambertMaterial({ color: 0xe6dfd2 }),
-      );
-      plaza.position.set(2, 0.22, 2);
-      plaza.receiveShadow = true;
-      scene.add(plaza);
+      const play = new THREE.Mesh(new THREE.CylinderGeometry(8.5, 8.5, 0.28, 28), sand);
+      play.position.set(-34, 0.2, 34);
+      play.receiveShadow = true;
+      scene.add(play);
+      const sport = new THREE.Mesh(new THREE.BoxGeometry(14, 0.2, 8), court);
+      sport.position.set(-48, 0.16, 40);
+      sport.receiveShadow = true;
+      scene.add(sport);
+      [[-34, 34], [-31, 32], [-37, 36]].forEach(([x, z], i) => {
+        const kit = shadowed(new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.4 + i * 0.4, 1.6), playAccent));
+        kit.position.set(x, 0.9, z);
+        scene.add(kit);
+      });
 
-      const makeFacade = (floors: number, bays: number, dusk: boolean, tone: Tone) => {
+      const amenity = new THREE.Group();
+      amenity.position.set(6, 0, 48);
+      amenity.add(shadowed(new THREE.Mesh(new THREE.BoxGeometry(28, 1, 18), stone)));
+      amenity.children[0].position.y = 0.5;
+      const hall = shadowed(new THREE.Mesh(new THREE.BoxGeometry(24, 5.8, 14), glass));
+      hall.position.y = 3.9;
+      amenity.add(hall);
+      const roof = shadowed(new THREE.Mesh(new THREE.BoxGeometry(30, 0.4, 20), white));
+      roof.position.y = 6.9;
+      amenity.add(roof);
+      scene.add(amenity);
+
+      const rnd = seeded(42);
+      const trunkGeo = new THREE.CylinderGeometry(0.28, 0.42, 2.4, 6);
+      const canopyGeo = new THREE.SphereGeometry(2.2, 8, 6);
+      const addTree = (x: number, z: number, scale: number, pink: boolean, y = 0) => {
+        const g = new THREE.Group();
+        const trunk = new THREE.Mesh(trunkGeo, bark);
+        trunk.position.y = 1.2 * scale;
+        trunk.scale.set(scale, scale, scale);
+        trunk.castShadow = true;
+        const cap = new THREE.Mesh(canopyGeo, pink ? blossom : leaf);
+        cap.position.y = (2.8 + scale * 0.4) * scale;
+        cap.scale.set(scale * 1.1, scale * 0.95, scale * 1.1);
+        cap.castShadow = true;
+        g.add(trunk, cap);
+        g.position.set(x, y, z);
+        scene.add(g);
+      };
+
+      for (let i = 0; i < 36; i += 1) {
+        const a = rnd() * Math.PI * 2;
+        const r = 16 + rnd() * 28;
+        addTree(Math.cos(a) * r * 1.05, Math.sin(a) * r * 0.9, 0.7 + rnd() * 0.55, rnd() > 0.62);
+      }
+      for (let i = 0; i < 70; i += 1) {
+        const x = -150 + rnd() * 170;
+        const z = -150 + rnd() * 48;
+        addTree(x, z, 0.9 + rnd() * 0.9, rnd() > 0.88, 4);
+      }
+      for (let i = 0; i < 40; i += 1) {
+        addTree(-130 - rnd() * 28, -80 + rnd() * 150, 1 + rnd() * 0.8, false, 5);
+      }
+
+      for (let i = 0; i < 9; i += 1) {
+        const hx = 122 + (i % 3) * 14;
+        const hz = -36 + Math.floor(i / 3) * 22 + rnd() * 4;
+        const house = shadowed(new THREE.Mesh(new THREE.BoxGeometry(8, 5.2, 7.2), wallHouse));
+        house.position.set(hx, 2.6, hz);
+        scene.add(house);
+        const hroof = shadowed(new THREE.Mesh(new THREE.BoxGeometry(9, 1.1, 8.2), roofHouse));
+        hroof.position.set(hx, 5.6, hz);
+        scene.add(hroof);
+      }
+
+      const makeFacade = (floors: number, bays: number, dusk: boolean) => {
         const canvas = document.createElement("canvas");
         canvas.width = 512;
         canvas.height = 1024;
         const ctx = canvas.getContext("2d");
         if (!ctx) return null;
-        const body = tone === "warm" ? "#e7d8c6" : "#eee8de";
-        const band = tone === "warm" ? "#d7c6b0" : "#ddd4c6";
-        ctx.fillStyle = body;
+        ctx.fillStyle = "#9aa8b6";
         ctx.fillRect(0, 0, 512, 1024);
-        ctx.fillStyle = band;
-        ctx.fillRect(0, 0, 512, 26);
-        const rows = Math.max(10, floors);
-        const cols = Math.max(5, bays);
-        const top = 30;
-        const rowH = (1024 - top - 10) / rows;
-        const colW = (512 - 14) / cols;
+        ctx.fillStyle = "#e8eef3";
+        ctx.fillRect(0, 0, 512, 22);
+        ctx.fillRect(0, 1010, 512, 14);
+        const rows = Math.max(12, floors);
+        const cols = Math.max(6, bays);
+        const top = 26;
+        const rowH = (1024 - top - 12) / rows;
+        const colW = (512 - 10) / cols;
+        for (let c = 0; c < cols; c += 1) {
+          if (c % 4 === 0) {
+            ctx.fillStyle = "rgba(244,247,250,0.92)";
+            ctx.fillRect(6 + c * colW - 3, 0, 5, 1024);
+          }
+        }
         for (let r = 0; r < rows; r += 1) {
-          if (r % 4 === 0) {
-            ctx.fillStyle = band;
-            ctx.fillRect(0, top + r * rowH - 2, 512, 5);
+          if (r % 5 === 0) {
+            ctx.fillStyle = "rgba(232,238,243,0.7)";
+            ctx.fillRect(0, top + r * rowH - 1, 512, 3);
           }
           for (let c = 0; c < cols; c += 1) {
-            const x = 8 + c * colW;
-            const y = top + r * rowH + 3;
-            const gw = colW - 5;
-            const gh = rowH - 7;
-            ctx.fillStyle = "rgba(255,255,255,0.38)";
-            ctx.fillRect(x, y + gh * 0.66, gw, gh * 0.2);
-            const lit = dusk && (r * 13 + c * 7) % 6 === 0;
-            ctx.fillStyle = lit ? "#efc56f" : "#243039";
-            ctx.fillRect(x + 1, y, gw - 2, gh * 0.6);
-            ctx.fillStyle = "rgba(92, 68, 48, 0.32)";
-            ctx.fillRect(x + gw * 0.48, y, 1.4, gh * 0.6);
+            const x = 7 + c * colW;
+            const y = top + r * rowH + 2;
+            const gw = colW - 4.5;
+            const gh = rowH - 5;
+            const lit = dusk && (r * 11 + c * 5) % 7 === 0;
+            ctx.fillStyle = lit ? "#efc56f" : "#1e2a32";
+            ctx.fillRect(x, y, gw, gh * 0.72);
+            ctx.fillStyle = "rgba(244,247,250,0.28)";
+            ctx.fillRect(x, y + gh * 0.72, gw, gh * 0.18);
           }
         }
         const map = new THREE.CanvasTexture(canvas);
@@ -329,15 +427,9 @@ export function PlSunStudy() {
         const sprite = new THREE.Sprite(
           new THREE.SpriteMaterial({ map, transparent: true, depthTest: false }),
         );
-        sprite.scale.set(15, 3.8, 1);
+        sprite.scale.set(16, 4, 1);
         sprite.renderOrder = 2;
         return sprite;
-      };
-
-      const shadowed = (mesh: import("three").Mesh) => {
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        return mesh;
       };
 
       type LitMesh = {
@@ -345,14 +437,27 @@ export function PlSunStudy() {
         duskMaps: { day: import("three").Texture; night: import("three").Texture };
       };
       const buildings: LitMesh[] = [];
+      const facadeCache = new Map<string, { day: import("three").Texture; night: import("three").Texture }>();
 
-      const sideMats = (map: import("three").Texture | null, cap: number, soffit: number) => {
+      const facadePair = (floors: number, bays: number) => {
+        const key = `${floors}:${bays}`;
+        const hit = facadeCache.get(key);
+        if (hit) return hit;
+        const day = makeFacade(floors, bays, false);
+        const night = makeFacade(floors, bays, true);
+        if (!day || !night) return null;
+        const pair = { day, night };
+        facadeCache.set(key, pair);
+        return pair;
+      };
+
+      const sideMats = (map: import("three").Texture | null) => {
         const side = new THREE.MeshLambertMaterial({ color: 0xffffff, map: map ?? undefined });
         return [
           side,
           side.clone(),
-          new THREE.MeshLambertMaterial({ color: cap }),
-          new THREE.MeshLambertMaterial({ color: soffit }),
+          new THREE.MeshLambertMaterial({ color: 0xf2f5f8 }),
+          new THREE.MeshLambertMaterial({ color: 0x7d868e }),
           side.clone(),
           side.clone(),
         ];
@@ -366,83 +471,60 @@ export function PlSunStudy() {
         d: number,
         h: number,
         floors: number,
-        tone: Tone,
-        balcony: boolean,
       ) => {
-        const bays = Math.max(5, Math.round(Math.max(w, d) / 3.6));
-        const dayMap = makeFacade(floors, bays, false, tone);
-        const nightMap = makeFacade(floors, bays, true, tone);
-        const cap = tone === "warm" ? 0xcfc0ae : 0xd8d1c6;
-        const mesh = shadowed(
-          new THREE.Mesh(new THREE.BoxGeometry(w, h, d), sideMats(dayMap, cap, 0x8f877c)),
-        );
+        const bays = Math.max(6, Math.round(Math.max(w, d) / 3.4));
+        const maps = facadePair(floors, bays);
+        const mesh = shadowed(new THREE.Mesh(new THREE.BoxGeometry(w, h, d), sideMats(maps?.day ?? null)));
         mesh.position.set(lx, h / 2, lz);
         root.add(mesh);
-        if (dayMap && nightMap) buildings.push({ mesh, duskMaps: { day: dayMap, night: nightMap } });
+        if (maps) buildings.push({ mesh, duskMaps: maps });
 
-        const podium = shadowed(
-          new THREE.Mesh(
-            new THREE.BoxGeometry(w + 1.6, 3.2, d + 1.3),
-            new THREE.MeshLambertMaterial({ color: tone === "warm" ? 0xc3b39f : 0xd2cbc0 }),
-          ),
-        );
-        podium.position.set(lx, 1.6, lz);
+        const podium = shadowed(new THREE.Mesh(new THREE.BoxGeometry(w + 1.4, 2.8, d + 1.2), stone));
+        podium.position.set(lx, 1.4, lz);
         root.add(podium);
 
-        if (balcony) {
-          const slab = shadowed(
-            new THREE.Mesh(
-              new THREE.BoxGeometry(w * 0.9, h * 0.86, 1.05),
-              new THREE.MeshLambertMaterial({ color: 0xd5dce2 }),
-            ),
-          );
-          slab.position.set(lx, h * 0.48, lz + d / 2 + 0.42);
-          root.add(slab);
-        }
-
-        const penthouse = shadowed(
-          new THREE.Mesh(
-            new THREE.BoxGeometry(w * 0.4, 3.4, d * 0.52),
-            new THREE.MeshLambertMaterial({ color: cap }),
-          ),
-        );
-        penthouse.position.set(lx + w * 0.08, h + 1.9, lz);
-        root.add(penthouse);
-        const crown = shadowed(
-          new THREE.Mesh(
-            new THREE.BoxGeometry(w + 0.6, 0.7, d + 0.6),
-            new THREE.MeshLambertMaterial({ color: 0xb7b0a6 }),
-          ),
-        );
-        crown.position.set(lx, h + 0.25, lz);
+        const crown = shadowed(new THREE.Mesh(new THREE.BoxGeometry(w + 0.9, 0.85, d + 0.9), white));
+        crown.position.set(lx, h + 0.3, lz);
         root.add(crown);
+
+        const penthouse = shadowed(new THREE.Mesh(new THREE.BoxGeometry(w * 0.38, 3.6, d * 0.48), white));
+        penthouse.position.set(lx + w * 0.06, h + 2.2, lz);
+        root.add(penthouse);
+
+        const finW = 0.7;
+        const finH = h * 0.96;
+        [
+          [w / 2 + 0.15, d / 2 - 1.2],
+          [-w / 2 - 0.15, -d / 2 + 1.2],
+        ].forEach(([fx, fz]) => {
+          const fin = shadowed(new THREE.Mesh(new THREE.BoxGeometry(finW, finH, 1.6), white));
+          fin.position.set(lx + fx, finH / 2, lz + fz);
+          root.add(fin);
+        });
       };
 
       const addDong = (b: Mass) => {
         const root = new THREE.Group();
         root.position.set(b.x, 0, b.z);
-        root.rotation.y = b.yaw;
-        if (b.kind === "tower") {
-          addVolume(root, 0, 0, b.w, b.d, b.h, b.floors, b.tone, false);
-          const fin = shadowed(
-            new THREE.Mesh(
-              new THREE.BoxGeometry(1.1, b.h * 0.92, b.d * 0.28),
-              new THREE.MeshLambertMaterial({ color: 0x8d7358 }),
-            ),
+        root.rotation.y = Math.atan2(b.x, b.z);
+        addVolume(root, 0, 0, b.w, b.d, b.h, b.floors);
+        if (b.kind !== "plate" && b.wing) {
+          const sign = b.mirror ? 1 : -1;
+          const ox = b.kind === "tee" ? 0 : sign * (-b.w / 2 + b.wing.w / 2);
+          const oz = -b.d / 2 - b.wing.d / 2;
+          addVolume(
+            root,
+            ox,
+            oz,
+            b.wing.w,
+            b.wing.d,
+            b.h * (b.kind === "tee" ? 0.92 : 0.94),
+            Math.max(18, b.floors - 3),
           );
-          fin.position.set(b.w / 2 + 0.3, b.h * 0.48, -b.d * 0.18);
-          root.add(fin);
-        } else {
-          addVolume(root, 0, 0, b.w, b.d, b.h, b.floors, b.tone, true);
-          if (b.kind === "ell" && b.wing) {
-            const ox = -b.w / 2 + b.wing.w / 2;
-            const oz = b.d / 2 + b.wing.d / 2;
-            addVolume(root, ox, oz, b.wing.w, b.wing.d, b.h * 0.9, Math.max(16, b.floors - 3), b.tone, true);
-          }
         }
         const label = makeLabel(b.name);
         if (label) {
-          label.position.set(b.x, b.h + 8, b.z);
+          label.position.set(b.x, b.h + 10, b.z);
           scene.add(label);
         }
         scene.add(root);
@@ -450,48 +532,16 @@ export function PlSunStudy() {
 
       DONGS.forEach(addDong);
 
-      const amenity = new THREE.Group();
-      amenity.position.set(2, 0, 14);
-      const glass = new THREE.MeshLambertMaterial({ color: 0x9eb0b8 });
-      const stone = new THREE.MeshLambertMaterial({ color: 0xe4ddd1 });
-      const canopy = new THREE.MeshLambertMaterial({ color: 0xf3eee6 });
-      const amenityBase = shadowed(new THREE.Mesh(new THREE.BoxGeometry(34, 1.1, 24), stone));
-      amenityBase.position.set(0, 0.55, 0);
-      const amenityHall = shadowed(new THREE.Mesh(new THREE.BoxGeometry(30, 6.4, 20), glass));
-      amenityHall.position.set(0, 4.3, 0);
-      const amenityRoof = shadowed(new THREE.Mesh(new THREE.BoxGeometry(40, 0.45, 28), canopy));
-      amenityRoof.position.set(0, 7.7, 0);
-      amenity.add(amenityBase, amenityHall, amenityRoof);
-      const pool = new THREE.Mesh(
-        new THREE.BoxGeometry(16, 0.18, 8),
-        new THREE.MeshLambertMaterial({ color: 0x6a9bb0 }),
-      );
-      pool.position.set(18, 0.2, 4);
-      pool.receiveShadow = true;
-      amenity.add(pool);
       const amenityLabel = makeLabel("커뮤니티");
       if (amenityLabel) {
-        amenityLabel.position.set(0, 12, 0);
-        amenity.add(amenityLabel);
+        amenityLabel.position.set(6, 14, 48);
+        scene.add(amenityLabel);
       }
-      scene.add(amenity);
-
-      const hedgeMat = new THREE.MeshLambertMaterial({ color: 0x5f7a4c });
-      [
-        [-18, -8],
-        [22, -10],
-        [-14, 22],
-        [16, 24],
-      ].forEach(([x, z]) => {
-        const hedge = shadowed(new THREE.Mesh(new THREE.BoxGeometry(8, 2.2, 2.4), hedgeMat));
-        hedge.position.set(x, 1.1, z);
-        scene.add(hedge);
-      });
 
       let duskApplied: boolean | null = null;
       const applySun = (t: number) => {
         const { azimuth, elevation } = sunPolar(t);
-        const dist = 220;
+        const dist = 260;
         const x = Math.sin(azimuth) * Math.cos(elevation) * dist;
         const y = Math.sin(elevation) * dist;
         const z = -Math.cos(azimuth) * Math.cos(elevation) * dist;
@@ -500,10 +550,10 @@ export function PlSunStudy() {
         const warmth = 1 - Math.sin(t * Math.PI);
         sunLight.color.setRGB(1, 0.93 - warmth * 0.18, 0.78 - warmth * 0.28);
         sunLight.intensity = 1.15 + Math.sin(elevation) * 1.35;
-        hemi.intensity = 0.28 + Math.sin(elevation) * 0.4;
-        const sky = new THREE.Color().setHSL(0.58 - warmth * 0.08, 0.32, 0.62 - warmth * 0.22);
+        hemi.intensity = 0.3 + Math.sin(elevation) * 0.4;
+        const sky = new THREE.Color().setHSL(0.58 - warmth * 0.08, 0.32, 0.64 - warmth * 0.22);
         scene.background = sky;
-        scene.fog = new THREE.Fog(sky.getHex(), 240, 560);
+        scene.fog = new THREE.Fog(sky.getHex(), 320, 740);
         renderer?.setClearColor(sky, 1);
         const dusk = t > 0.82 || t < 0.1;
         if (duskApplied !== dusk) {
@@ -587,7 +637,7 @@ export function PlSunStudy() {
       };
       const onWheel = (e: WheelEvent) => {
         e.preventDefault();
-        orbitRef.current.radius = clamp(orbitRef.current.radius + e.deltaY * 0.14, RADIUS_MIN, RADIUS_MAX);
+        orbitRef.current.radius = clamp(orbitRef.current.radius + e.deltaY * 0.16, RADIUS_MIN, RADIUS_MAX);
       };
       host.addEventListener("pointerdown", onDown);
       host.addEventListener("pointermove", onMove);
@@ -634,7 +684,7 @@ export function PlSunStudy() {
       ref={rootRef}
       className={`pl-sunstudy${full ? " is-full" : ""}`}
       role="img"
-      aria-label="2026 신축형 단지 3D 일조 시뮬레이션. 좌우 드래그는 동서 회전, 상하 드래그는 남북 각도, 전체화면에서 동별 일조·그림자를 볼 수 있습니다."
+      aria-label="10개 동이 중정을 감싸는 신축 단지 3D 일조 시뮬레이션. 좌우 드래그는 동서 회전, 상하 드래그는 남북 각도입니다."
     >
       <div ref={hostRef} className="pl-sunstudy__stage" />
       <div className="pl-sunstudy__chrome">
@@ -706,7 +756,7 @@ export function PlSunStudy() {
             min={PHI_MIN}
             max={PHI_MAX}
             step={0.01}
-            defaultValue={0.9}
+            defaultValue={0.58}
             aria-label="남북 카메라 각도"
             onChange={(e) => {
               orbitRef.current.phi = Number(e.target.value);
