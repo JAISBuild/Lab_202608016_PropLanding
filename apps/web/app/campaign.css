@@ -778,7 +778,7 @@ html.pl-sun-full .pl-header {
 }
 
 .pl-sunstudy__time b {
-  color: var(--pl-lime);
+  color: #fff;
   font-weight: 800;
 }
 
@@ -811,7 +811,7 @@ html.pl-sun-full .pl-header {
 }
 
 .pl-sunstudy__compass span {
-  color: var(--pl-lime);
+  color: #fff;
 }
 
 .pl-sunstudy__legend {
@@ -858,23 +858,36 @@ html.pl-sun-full .pl-header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.45rem 0.55rem;
-  border-radius: 999px;
-  background: rgba(27, 19, 40, 0.78);
+  gap: 0.55rem;
+  padding: 0.28rem 0.55rem 0.4rem 0.35rem;
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(15, 15, 15, 0.55), rgba(15, 15, 15, 0.92));
 }
 
 .pl-sunstudy__play {
   flex: 0 0 auto;
-  min-height: 2rem;
-  padding: 0 0.8rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  min-width: 2.4rem;
+  min-height: 2.4rem;
+  padding: 0;
   border: 0;
-  border-radius: 999px;
-  background: var(--pl-lime);
-  color: var(--pl-ink);
-  font-size: 11px;
-  font-weight: 800;
+  border-radius: 4px;
+  background: transparent;
+  color: #fff;
   cursor: pointer;
+}
+
+.pl-sunstudy__play svg {
+  display: block;
+  width: 1.45rem;
+  height: 1.45rem;
+  margin: 0 auto;
+  fill: #fff;
+}
+
+.pl-sunstudy__play:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .pl-sunstudy__slider {
@@ -882,7 +895,7 @@ html.pl-sun-full .pl-header {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  color: rgba(255, 255, 255, 0.78);
+  color: rgba(255, 255, 255, 0.82);
   font-size: 10px;
   font-weight: 700;
 }
@@ -890,18 +903,66 @@ html.pl-sun-full .pl-header {
 .pl-sunstudy__slider input,
 .pl-sunstudy__tilt input {
   flex: 1;
-  accent-color: var(--pl-lime);
+  height: 1.2rem;
+  margin: 0;
+  accent-color: #f00;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.pl-sunstudy__slider input::-webkit-slider-runnable-track,
+.pl-sunstudy__tilt input::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.pl-sunstudy__slider input::-webkit-slider-thumb,
+.pl-sunstudy__tilt input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  margin-top: -4.5px;
+  border: 0;
+  border-radius: 50%;
+  background: #f00;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+
+.pl-sunstudy__slider input::-moz-range-track,
+.pl-sunstudy__tilt input::-moz-range-track {
+  height: 3px;
+  border: 0;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.pl-sunstudy__slider input::-moz-range-progress,
+.pl-sunstudy__tilt input::-moz-range-progress {
+  height: 3px;
+  border-radius: 2px;
+  background: #f00;
+}
+
+.pl-sunstudy__slider input::-moz-range-thumb,
+.pl-sunstudy__tilt input::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 0;
+  border-radius: 50%;
+  background: #f00;
 }
 
 .pl-sunstudy__fs {
-  min-height: 2rem;
+  min-height: 2.1rem;
   padding: 0 0.8rem;
   border: 0;
-  border-radius: 999px;
-  background: var(--pl-lime);
-  color: var(--pl-ink);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   cursor: pointer;
   pointer-events: auto;
 }
@@ -920,18 +981,19 @@ html.pl-sun-full .pl-header {
   font-weight: 700;
 }
 
-.pl-sunstudy__hint {
+.pl-sunstudy__hint,
+.pl-life__wide .pl-sunstudy__hint {
   position: absolute;
   left: 0.9rem;
   top: 3.15rem;
   z-index: 2;
   margin: 0;
-  color: rgba(255, 255, 255, 0.78);
+  color: rgba(255, 255, 255, 0.9);
   font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   pointer-events: none;
-  text-shadow: 0 1px 8px rgba(27, 19, 40, 0.55);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
 }
 
 .pl-life__panel {
@@ -1055,6 +1117,14 @@ html.pl-sun-full .pl-header {
   font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.08em;
+}
+
+.pl-life__wide > .pl-life__panel p {
+  color: #fff;
+}
+
+.pl-life__wide > .pl-life__panel h3 {
+  color: #fff;
 }
 
 .pl-life__panel--plain p {

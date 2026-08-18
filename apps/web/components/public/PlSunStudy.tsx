@@ -2,41 +2,55 @@
 
 import { useEffect, useRef, useState } from "react";
 
-type Kind = "ell" | "tee" | "plate";
+type Kind = "why" | "tee";
 
 type Mass = {
   name: string;
   x: number;
   z: number;
-  w: number;
-  d: number;
   h: number;
   floors: number;
   kind: Kind;
-  mirror?: boolean;
-  wing?: { w: number; d: number };
+  yaw: number;
 };
 
 const DAY_MS = 22000;
 const HOUR_START = 8;
 const HOUR_SPAN = 8;
 const PHI_MIN = 0.18;
-const PHI_MAX = 1.22;
-const RADIUS_MIN = 140;
-const RADIUS_MAX = 420;
+const PHI_MAX = 1.18;
+const RADIUS_MIN = 520;
+const RADIUS_MAX = 1480;
 
-const DONGS: Mass[] = [
-  { name: "101동", x: 10, z: -64, w: 46, d: 14, h: 78, floors: 26, kind: "ell", wing: { w: 14, d: 32 } },
-  { name: "102동", x: 46, z: -46, w: 44, d: 14, h: 90, floors: 30, kind: "tee", wing: { w: 15, d: 30 } },
-  { name: "103동", x: 68, z: -8, w: 48, d: 14, h: 96, floors: 32, kind: "ell", wing: { w: 14, d: 34 } },
-  { name: "104동", x: 60, z: 32, w: 42, d: 14, h: 84, floors: 28, kind: "ell", mirror: true, wing: { w: 14, d: 30 } },
-  { name: "105동", x: 28, z: 58, w: 50, d: 14, h: 72, floors: 24, kind: "tee", wing: { w: 14, d: 28 } },
-  { name: "106동", x: -10, z: 62, w: 44, d: 14, h: 66, floors: 22, kind: "ell", wing: { w: 14, d: 26 } },
-  { name: "107동", x: -44, z: 46, w: 46, d: 14, h: 75, floors: 25, kind: "ell", mirror: true, wing: { w: 14, d: 30 } },
-  { name: "108동", x: -68, z: 6, w: 48, d: 14, h: 88, floors: 29, kind: "tee", wing: { w: 15, d: 32 } },
-  { name: "109동", x: -58, z: -34, w: 44, d: 14, h: 81, floors: 27, kind: "ell", wing: { w: 14, d: 32 } },
-  { name: "110동", x: -26, z: -62, w: 42, d: 14, h: 72, floors: 24, kind: "ell", mirror: true, wing: { w: 14, d: 28 } },
-];
+const DONGS: Mass[] = (
+  [
+    { name: "101동", deg: 10, r: 278, h: 78, floors: 26, kind: "why", spin: 0.42 },
+    { name: "102동", deg: 40, r: 286, h: 90, floors: 30, kind: "tee", spin: -0.31 },
+    { name: "103동", deg: 70, r: 274, h: 96, floors: 32, kind: "why", spin: 0.22 },
+    { name: "104동", deg: 100, r: 290, h: 84, floors: 28, kind: "tee", spin: -0.38 },
+    { name: "105동", deg: 132, r: 282, h: 72, floors: 24, kind: "why", spin: 0.18 },
+    { name: "106동", deg: 164, r: 298, h: 80, floors: 26, kind: "tee", spin: -0.25 },
+    { name: "107동", deg: 206, r: 300, h: 66, floors: 22, kind: "why", spin: 0.33 },
+    { name: "108동", deg: 238, r: 284, h: 75, floors: 25, kind: "tee", spin: -0.2 },
+    { name: "109동", deg: 268, r: 276, h: 88, floors: 29, kind: "why", spin: 0.28 },
+    { name: "110동", deg: 298, r: 288, h: 81, floors: 27, kind: "tee", spin: -0.36 },
+    { name: "111동", deg: 328, r: 280, h: 74, floors: 24, kind: "why", spin: 0.15 },
+    { name: "112동", deg: 356, r: 272, h: 70, floors: 23, kind: "tee", spin: -0.24 },
+  ] as const
+).map((d) => {
+  const rad = (d.deg * Math.PI) / 180;
+  const x = Math.sin(rad) * d.r;
+  const z = -Math.cos(rad) * d.r;
+  return {
+    name: d.name,
+    x,
+    z,
+    h: d.h,
+    floors: d.floors,
+    kind: d.kind,
+    yaw: Math.atan2(x, z) + d.spin,
+  };
+});
 
 function clamp(n: number, a: number, b: number) {
   return Math.max(a, Math.min(b, n));
@@ -87,7 +101,7 @@ export function PlSunStudy() {
   const compassRef = useRef<HTMLDivElement>(null);
   const playingRef = useRef(true);
   const dayTRef = useRef(0.35);
-  const orbitRef = useRef({ theta: 0.22, phi: 0.58, radius: 248 });
+  const orbitRef = useRef({ theta: 0.58, phi: 0.36, radius: 860 });
   const [playing, setPlaying] = useState(true);
   const [full, setFull] = useState(false);
 
@@ -130,10 +144,10 @@ export function PlSunStudy() {
       if (disposed || !hostRef.current) return;
 
       const scene = new THREE.Scene();
-      scene.fog = new THREE.Fog(0x9eb7c9, 320, 740);
+      scene.fog = new THREE.Fog(0x9eb7c9, 980, 2400);
 
-      const camera = new THREE.PerspectiveCamera(38, 1, 0.8, 1200);
-      const look = new THREE.Vector3(0, 10, 4);
+      const camera = new THREE.PerspectiveCamera(32, 1, 2, 4200);
+      const look = new THREE.Vector3(8, 4, 16);
 
       const placeCamera = () => {
         const { theta, phi, radius } = orbitRef.current;
@@ -175,13 +189,13 @@ export function PlSunStudy() {
       sunLight.shadow.mapSize.set(2048, 2048);
       sunLight.shadow.bias = -0.00028;
       sunLight.shadow.normalBias = 0.036;
-      const shadowSpan = 190;
+      const shadowSpan = 520;
       sunLight.shadow.camera.left = -shadowSpan;
       sunLight.shadow.camera.right = shadowSpan;
       sunLight.shadow.camera.top = shadowSpan;
       sunLight.shadow.camera.bottom = -shadowSpan;
-      sunLight.shadow.camera.near = 12;
-      sunLight.shadow.camera.far = 560;
+      sunLight.shadow.camera.near = 16;
+      sunLight.shadow.camera.far = 1400;
       scene.add(sunLight);
       scene.add(sunLight.target);
 
@@ -219,74 +233,74 @@ export function PlSunStudy() {
       const court = new THREE.MeshLambertMaterial({ color: 0x3f7d5e });
       const playAccent = new THREE.MeshLambertMaterial({ color: 0xe07a5a });
 
-      const site = new THREE.Mesh(new THREE.CircleGeometry(132, 64), grass);
+      const site = new THREE.Mesh(new THREE.CircleGeometry(390, 80), grass);
       site.rotation.x = -Math.PI / 2;
-      site.scale.set(1.18, 1, 1.02);
+      site.scale.set(1.16, 1, 1.08);
       site.receiveShadow = true;
       scene.add(site);
 
-      const hill = shadowed(new THREE.Mesh(new THREE.BoxGeometry(170, 10, 58), forestFloor));
-      hill.position.set(-28, 3.2, -118);
-      hill.rotation.z = 0.05;
-      hill.rotation.x = -0.08;
+      const hill = shadowed(new THREE.Mesh(new THREE.BoxGeometry(420, 16, 110), forestFloor));
+      hill.position.set(-50, 5, -360);
+      hill.rotation.z = 0.04;
+      hill.rotation.x = -0.06;
       scene.add(hill);
-      const hillW = shadowed(new THREE.Mesh(new THREE.BoxGeometry(54, 12, 150), forestFloor));
-      hillW.position.set(-118, 4, -20);
-      hillW.rotation.z = 0.12;
+      const hillW = shadowed(new THREE.Mesh(new THREE.BoxGeometry(96, 18, 340), forestFloor));
+      hillW.position.set(-360, 6, -30);
+      hillW.rotation.z = 0.1;
       scene.add(hillW);
 
-      const southRoad = new THREE.Mesh(new THREE.PlaneGeometry(320, 26), asphalt);
+      const southRoad = new THREE.Mesh(new THREE.PlaneGeometry(760, 38), asphalt);
       southRoad.rotation.x = -Math.PI / 2;
-      southRoad.position.set(18, 0.04, 96);
+      southRoad.position.set(40, 0.04, 360);
       southRoad.receiveShadow = true;
       scene.add(southRoad);
-      const eastRoad = new THREE.Mesh(new THREE.PlaneGeometry(26, 280), asphalt);
+      const eastRoad = new THREE.Mesh(new THREE.PlaneGeometry(38, 680), asphalt);
       eastRoad.rotation.x = -Math.PI / 2;
-      eastRoad.position.set(108, 0.05, 8);
+      eastRoad.position.set(390, 0.05, 20);
       eastRoad.receiveShadow = true;
       scene.add(eastRoad);
 
-      for (let i = 0; i < 6; i += 1) {
-        const stripe = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 10), white);
+      for (let i = 0; i < 8; i += 1) {
+        const stripe = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 14), white);
         stripe.rotation.x = -Math.PI / 2;
-        stripe.position.set(96 + i * 2.2, 0.07, 96);
+        stripe.position.set(360 + i * 2.6, 0.07, 360);
         scene.add(stripe);
       }
 
-      const dropoff = new THREE.Mesh(new THREE.CylinderGeometry(16, 16, 0.35, 40), pathMat);
-      dropoff.position.set(8, 0.2, 72);
-      dropoff.scale.set(1.35, 1, 0.72);
+      const dropoff = new THREE.Mesh(new THREE.CylinderGeometry(28, 28, 0.35, 40), pathMat);
+      dropoff.position.set(110, 0.2, 250);
+      dropoff.scale.set(1.7, 1, 0.72);
       dropoff.receiveShadow = true;
       scene.add(dropoff);
 
-      const lawnPad = new THREE.Mesh(new THREE.CylinderGeometry(18, 18, 0.28, 48), lawn);
-      lawnPad.position.set(0, 0.16, 8);
+      const lawnPad = new THREE.Mesh(new THREE.CylinderGeometry(78, 78, 0.28, 64), lawn);
+      lawnPad.position.set(36, 0.16, 12);
       lawnPad.receiveShadow = true;
       scene.add(lawnPad);
 
-      const pondA = new THREE.Mesh(new THREE.CircleGeometry(13, 36), water);
+      const pondA = new THREE.Mesh(new THREE.CircleGeometry(42, 48), water);
       pondA.rotation.x = -Math.PI / 2;
-      pondA.scale.set(1.55, 1, 0.72);
-      pondA.position.set(8, 0.14, -16);
+      pondA.scale.set(1.6, 1, 0.82);
+      pondA.position.set(8, 0.14, -48);
       pondA.receiveShadow = true;
       scene.add(pondA);
-      const pondB = new THREE.Mesh(new THREE.CircleGeometry(8, 28), water);
+      const pondB = new THREE.Mesh(new THREE.CircleGeometry(22, 36), water);
       pondB.rotation.x = -Math.PI / 2;
-      pondB.scale.set(1.2, 1, 0.85);
-      pondB.position.set(-6, 0.15, -10);
+      pondB.scale.set(1.3, 1, 0.92);
+      pondB.position.set(-28, 0.15, -28);
       scene.add(pondB);
 
-      const ring = new THREE.Mesh(new THREE.RingGeometry(21, 24.2, 48), pathMat);
+      const ring = new THREE.Mesh(new THREE.RingGeometry(112, 122, 64), pathMat);
       ring.rotation.x = -Math.PI / 2;
       ring.position.y = 0.13;
       scene.add(ring);
 
       [
-        [0, 0, 52, 3.2, 0],
-        [0, 0, 3.2, 48, 0],
-        [18, -22, 28, 2.6, 0.5],
-        [-22, 20, 26, 2.6, -0.4],
-        [24, 28, 22, 2.4, 0.7],
+        [0, 0, 148, 5.2, 0],
+        [0, 0, 5.2, 140, 0],
+        [52, -58, 72, 4, 0.48],
+        [-58, 48, 70, 4, -0.38],
+        [70, 78, 58, 3.6, 0.68],
       ].forEach(([x, z, w, d, yaw]) => {
         const walk = new THREE.Mesh(new THREE.BoxGeometry(w, 0.16, d), pathMat);
         walk.position.set(x, 0.12, z);
@@ -295,29 +309,50 @@ export function PlSunStudy() {
         scene.add(walk);
       });
 
-      const play = new THREE.Mesh(new THREE.CylinderGeometry(8.5, 8.5, 0.28, 28), sand);
-      play.position.set(-34, 0.2, 34);
+      const play = new THREE.Mesh(new THREE.CylinderGeometry(22, 22, 0.28, 32), sand);
+      play.position.set(-98, 0.2, 98);
       play.receiveShadow = true;
       scene.add(play);
-      const sport = new THREE.Mesh(new THREE.BoxGeometry(14, 0.2, 8), court);
-      sport.position.set(-48, 0.16, 40);
+      const sport = new THREE.Mesh(new THREE.BoxGeometry(30, 0.2, 18), court);
+      sport.position.set(-132, 0.16, 108);
       sport.receiveShadow = true;
       scene.add(sport);
-      [[-34, 34], [-31, 32], [-37, 36]].forEach(([x, z], i) => {
-        const kit = shadowed(new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.4 + i * 0.4, 1.6), playAccent));
-        kit.position.set(x, 0.9, z);
+      [
+        [-98, 98],
+        [-90, 92],
+        [-106, 104],
+      ].forEach(([x, z], i) => {
+        const kit = shadowed(new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.8 + i * 0.4, 2.4), playAccent));
+        kit.position.set(x, 1, z);
         scene.add(kit);
       });
 
+      const pavilion = new THREE.Group();
+      pavilion.position.set(-18, 0, 8);
+      const pavBase = shadowed(new THREE.Mesh(new THREE.BoxGeometry(16, 1.2, 16), stone));
+      pavBase.position.y = 0.6;
+      const pavPosts = [-5, 5].flatMap((px) =>
+        [-5, 5].map((pz) => {
+          const post = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.7, 4.6, 0.7), new THREE.MeshLambertMaterial({ color: 0x4a3428 })));
+          post.position.set(px, 3.5, pz);
+          return post;
+        }),
+      );
+      const pavRoof = shadowed(new THREE.Mesh(new THREE.ConeGeometry(13, 4.2, 4), new THREE.MeshLambertMaterial({ color: 0x2c2520 })));
+      pavRoof.position.y = 7.2;
+      pavRoof.rotation.y = Math.PI / 4;
+      pavilion.add(pavBase, ...pavPosts, pavRoof);
+      scene.add(pavilion);
+
       const amenity = new THREE.Group();
-      amenity.position.set(6, 0, 48);
-      amenity.add(shadowed(new THREE.Mesh(new THREE.BoxGeometry(28, 1, 18), stone)));
+      amenity.position.set(18, 0, 148);
+      amenity.add(shadowed(new THREE.Mesh(new THREE.BoxGeometry(32, 1, 18), stone)));
       amenity.children[0].position.y = 0.5;
-      const hall = shadowed(new THREE.Mesh(new THREE.BoxGeometry(24, 5.8, 14), glass));
-      hall.position.y = 3.9;
+      const hall = shadowed(new THREE.Mesh(new THREE.BoxGeometry(28, 5.2, 14), glass));
+      hall.position.y = 3.6;
       amenity.add(hall);
-      const roof = shadowed(new THREE.Mesh(new THREE.BoxGeometry(30, 0.4, 20), white));
-      roof.position.y = 6.9;
+      const roof = shadowed(new THREE.Mesh(new THREE.BoxGeometry(34, 0.4, 20), white));
+      roof.position.y = 6.4;
       amenity.add(roof);
       scene.add(amenity);
 
@@ -339,23 +374,28 @@ export function PlSunStudy() {
         scene.add(g);
       };
 
-      for (let i = 0; i < 36; i += 1) {
+      for (let i = 0; i < 70; i += 1) {
         const a = rnd() * Math.PI * 2;
-        const r = 16 + rnd() * 28;
-        addTree(Math.cos(a) * r * 1.05, Math.sin(a) * r * 0.9, 0.7 + rnd() * 0.55, rnd() > 0.62);
+        const r = 88 + rnd() * 92;
+        addTree(Math.cos(a) * r * 1.08, Math.sin(a) * r * 0.98, 0.8 + rnd() * 0.7, rnd() > 0.52);
+      }
+      for (let i = 0; i < 12; i += 1) {
+        const gap = ((i + 0.5) * 30 * Math.PI) / 180;
+        addTree(Math.sin(gap) * 248, -Math.cos(gap) * 248, 1.15 + rnd() * 0.4, rnd() > 0.45);
+        addTree(Math.sin(gap + 0.04) * 258, -Math.cos(gap + 0.04) * 258, 0.9 + rnd() * 0.35, true);
+      }
+      for (let i = 0; i < 120; i += 1) {
+        const x = -400 + rnd() * 340;
+        const z = -400 + rnd() * 90;
+        addTree(x, z, 1.05 + rnd() * 1.2, rnd() > 0.92, 6);
       }
       for (let i = 0; i < 70; i += 1) {
-        const x = -150 + rnd() * 170;
-        const z = -150 + rnd() * 48;
-        addTree(x, z, 0.9 + rnd() * 0.9, rnd() > 0.88, 4);
-      }
-      for (let i = 0; i < 40; i += 1) {
-        addTree(-130 - rnd() * 28, -80 + rnd() * 150, 1 + rnd() * 0.8, false, 5);
+        addTree(-380 - rnd() * 48, -160 + rnd() * 300, 1.15 + rnd() * 1.0, false, 7);
       }
 
       for (let i = 0; i < 9; i += 1) {
-        const hx = 122 + (i % 3) * 14;
-        const hz = -36 + Math.floor(i / 3) * 22 + rnd() * 4;
+        const hx = 430 + (i % 3) * 16;
+        const hz = -50 + Math.floor(i / 3) * 24 + rnd() * 4;
         const house = shadowed(new THREE.Mesh(new THREE.BoxGeometry(8, 5.2, 7.2), wallHouse));
         house.position.set(hx, 2.6, hz);
         scene.add(house);
@@ -427,7 +467,7 @@ export function PlSunStudy() {
         const sprite = new THREE.Sprite(
           new THREE.SpriteMaterial({ map, transparent: true, depthTest: false }),
         );
-        sprite.scale.set(16, 4, 1);
+        sprite.scale.set(22, 5.5, 1);
         sprite.renderOrder = 2;
         return sprite;
       };
@@ -506,25 +546,18 @@ export function PlSunStudy() {
       const addDong = (b: Mass) => {
         const root = new THREE.Group();
         root.position.set(b.x, 0, b.z);
-        root.rotation.y = Math.atan2(b.x, b.z);
-        addVolume(root, 0, 0, b.w, b.d, b.h, b.floors);
-        if (b.kind !== "plate" && b.wing) {
-          const sign = b.mirror ? 1 : -1;
-          const ox = b.kind === "tee" ? 0 : sign * (-b.w / 2 + b.wing.w / 2);
-          const oz = -b.d / 2 - b.wing.d / 2;
-          addVolume(
-            root,
-            ox,
-            oz,
-            b.wing.w,
-            b.wing.d,
-            b.h * (b.kind === "tee" ? 0.92 : 0.94),
-            Math.max(18, b.floors - 3),
-          );
+        root.rotation.y = b.yaw;
+        if (b.kind === "tee") {
+          addVolume(root, 0, 0, 32, 12, b.h, b.floors);
+          addVolume(root, 0, -18, 12, 26, b.h * 0.95, Math.max(18, b.floors - 2));
+        } else {
+          addVolume(root, 0, -14, 11, 24, b.h, b.floors);
+          addVolume(root, -16, 10, 22, 11, b.h * 0.96, Math.max(18, b.floors - 2));
+          addVolume(root, 16, 10, 22, 11, b.h * 0.96, Math.max(18, b.floors - 2));
         }
         const label = makeLabel(b.name);
         if (label) {
-          label.position.set(b.x, b.h + 10, b.z);
+          label.position.set(b.x, b.h + 14, b.z);
           scene.add(label);
         }
         scene.add(root);
@@ -534,14 +567,14 @@ export function PlSunStudy() {
 
       const amenityLabel = makeLabel("커뮤니티");
       if (amenityLabel) {
-        amenityLabel.position.set(6, 14, 48);
+        amenityLabel.position.set(18, 14, 148);
         scene.add(amenityLabel);
       }
 
       let duskApplied: boolean | null = null;
       const applySun = (t: number) => {
         const { azimuth, elevation } = sunPolar(t);
-        const dist = 260;
+        const dist = 560;
         const x = Math.sin(azimuth) * Math.cos(elevation) * dist;
         const y = Math.sin(elevation) * dist;
         const z = -Math.cos(azimuth) * Math.cos(elevation) * dist;
@@ -553,7 +586,7 @@ export function PlSunStudy() {
         hemi.intensity = 0.3 + Math.sin(elevation) * 0.4;
         const sky = new THREE.Color().setHSL(0.58 - warmth * 0.08, 0.32, 0.64 - warmth * 0.22);
         scene.background = sky;
-        scene.fog = new THREE.Fog(sky.getHex(), 320, 740);
+        scene.fog = new THREE.Fog(sky.getHex(), 980, 2400);
         renderer?.setClearColor(sky, 1);
         const dusk = t > 0.82 || t < 0.1;
         if (duskApplied !== dusk) {
@@ -684,7 +717,7 @@ export function PlSunStudy() {
       ref={rootRef}
       className={`pl-sunstudy${full ? " is-full" : ""}`}
       role="img"
-      aria-label="10개 동이 중정을 감싸는 신축 단지 3D 일조 시뮬레이션. 좌우 드래그는 동서 회전, 상하 드래그는 남북 각도입니다."
+      aria-label="12개 동이 한 동 너비 이상 떨어져 넓은 중정 공원을 둘러싼 단지 3D 일조 시뮬레이션. 좌우 드래그는 동서 회전, 상하 드래그는 남북 각도입니다."
     >
       <div ref={hostRef} className="pl-sunstudy__stage" />
       <div className="pl-sunstudy__chrome">
@@ -721,12 +754,21 @@ export function PlSunStudy() {
         <button
           type="button"
           className="pl-sunstudy__play"
+          aria-label={playing ? "일시정지" : "재생"}
           onClick={() => {
             playingRef.current = !playingRef.current;
             setPlaying(playingRef.current);
           }}
         >
-          {playing ? "일시정지" : "재생"}
+          {playing ? (
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 5h3.2v14H7V5zm6.8 0H17v14h-3.2V5z" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 5.2v13.6L19 12 8 5.2z" />
+            </svg>
+          )}
         </button>
         <label className="pl-sunstudy__slider">
           <span>08시</span>
@@ -756,7 +798,7 @@ export function PlSunStudy() {
             min={PHI_MIN}
             max={PHI_MAX}
             step={0.01}
-            defaultValue={0.58}
+            defaultValue={0.36}
             aria-label="남북 카메라 각도"
             onChange={(e) => {
               orbitRef.current.phi = Number(e.target.value);
