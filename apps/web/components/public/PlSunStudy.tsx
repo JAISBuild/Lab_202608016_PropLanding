@@ -312,7 +312,6 @@ export function PlSunStudy() {
       const blossom = new THREE.MeshLambertMaterial({ color: 0xe59ab3 });
       const sand = new THREE.MeshLambertMaterial({ color: 0xd8b57a });
       const court = new THREE.MeshLambertMaterial({ color: 0x3f7d5e });
-      const playAccent = new THREE.MeshLambertMaterial({ color: 0xe07a5a });
 
       const site = new THREE.Mesh(new THREE.CircleGeometry(250, 72), grass);
       site.rotation.x = -Math.PI / 2;
@@ -429,23 +428,140 @@ export function PlSunStudy() {
         scene.add(walk);
       });
 
-      const play = new THREE.Mesh(new THREE.CylinderGeometry(14, 14, 0.28, 28), sand);
-      play.position.set(-32, 0.2, 96);
-      play.receiveShadow = true;
-      scene.add(play);
-      const sport = new THREE.Mesh(new THREE.BoxGeometry(18, 0.2, 12), court);
-      sport.position.set(-48, 0.16, 122);
-      sport.receiveShadow = true;
-      scene.add(sport);
-      [
-        [-32, 96],
-        [-28, 92],
-        [-36, 102],
-      ].forEach(([x, z], i) => {
-        const kit = shadowed(new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.6 + i * 0.4, 2.2), playAccent));
-        kit.position.set(x, 1, z);
-        scene.add(kit);
+      const soil = new THREE.MeshLambertMaterial({ color: 0x6d5039 });
+      const timber = new THREE.MeshLambertMaterial({ color: 0x8b5c35 });
+      const steel = new THREE.MeshLambertMaterial({ color: 0xc4ccd3 });
+      const slideSkin = new THREE.MeshLambertMaterial({ color: 0x5cb0d8 });
+      const canopyRed = new THREE.MeshLambertMaterial({ color: 0xd6604a });
+      const hedgeMat = new THREE.MeshLambertMaterial({ color: 0x3f6b34 });
+      const leafDeep = new THREE.MeshLambertMaterial({ color: 0x3d6b39 });
+      const leafLight = new THREE.MeshLambertMaterial({ color: 0x6fa04c });
+      const coniferMat = new THREE.MeshLambertMaterial({ color: 0x2f5b3d });
+      const blossomSoft = new THREE.MeshLambertMaterial({ color: 0xf3bcd0 });
+      const lampMat = new THREE.MeshLambertMaterial({ color: 0x333b45 });
+      const bulbMat = new THREE.MeshBasicMaterial({ color: 0xfff3cf });
+      const petalMats = [0xe8607f, 0xf0a03c, 0xe8d24a, 0xb46cd0, 0xf5f0f0].map(
+        (c) => new THREE.MeshLambertMaterial({ color: c }),
+      );
+
+      const unitBox = new THREE.BoxGeometry(1, 1, 1);
+      const unitCyl = new THREE.CylinderGeometry(1, 1, 1, 10);
+      const blobGeo = new THREE.IcosahedronGeometry(1, 0);
+      const coneGeo = new THREE.ConeGeometry(1, 1, 7);
+      const petalGeo = new THREE.SphereGeometry(0.34, 6, 5);
+
+      const part = (
+        parent: import("three").Group,
+        geo: import("three").BufferGeometry,
+        mat: import("three").Material,
+        px: number,
+        py: number,
+        pz: number,
+        sx: number,
+        sy: number,
+        sz: number,
+        rot?: [number, number, number],
+      ) => {
+        const mesh = shadowed(new THREE.Mesh(geo, mat));
+        mesh.position.set(px, py, pz);
+        mesh.scale.set(sx, sy, sz);
+        if (rot) mesh.rotation.set(rot[0], rot[1], rot[2]);
+        parent.add(mesh);
+        return mesh;
+      };
+
+      const playground = new THREE.Group();
+      playground.position.set(-34, 0, 92);
+      scene.add(playground);
+
+      part(playground, unitCyl, timber, 0, 0.22, 0, 30, 0.44, 30);
+      const sandPad = new THREE.Mesh(unitCyl, sand);
+      sandPad.position.set(0, 0.46, 0);
+      sandPad.scale.set(28, 0.35, 28);
+      sandPad.receiveShadow = true;
+      playground.add(sandPad);
+
+      const tower = new THREE.Group();
+      tower.position.set(-4, 0, -3);
+      playground.add(tower);
+      [-2.6, 2.6].forEach((ox) =>
+        [-2.6, 2.6].forEach((oz) => part(tower, unitBox, timber, ox, 3.1, oz, 0.55, 6.2, 0.55)),
+      );
+      part(tower, unitBox, timber, 0, 6.3, 0, 6.4, 0.4, 6.4);
+      part(tower, coneGeo, canopyRed, 0, 8.4, 0, 5.2, 3.2, 5.2, [0, Math.PI / 4, 0]);
+      part(tower, unitBox, steel, 0, 7.2, 0, 0.3, 1.6, 6.2);
+      part(tower, unitBox, slideSkin, 4.9, 3.4, 0, 0.35, 4.6, 9.4, [-0.62, 0, 0]);
+      part(tower, unitBox, slideSkin, 4.9, 3.4, 0, 2.6, 0.35, 9.4, [-0.62, 0, 0]);
+      [0, 1, 2, 3].forEach((s) =>
+        part(tower, unitBox, timber, -4.4, 1.1 + s * 1.5, 0, 2.4, 0.32, 1.1),
+      );
+
+      const swing = new THREE.Group();
+      swing.position.set(9, 0, 6);
+      swing.rotation.y = 0.32;
+      playground.add(swing);
+      [-5, 5].forEach((ox) => {
+        part(swing, unitBox, steel, ox, 2.6, -1.7, 0.42, 5.6, 0.42, [0.28, 0, 0]);
+        part(swing, unitBox, steel, ox, 2.6, 1.7, 0.42, 5.6, 0.42, [-0.28, 0, 0]);
       });
+      part(swing, unitCyl, steel, 0, 5.2, 0, 0.24, 11, 0.24, [0, 0, Math.PI / 2]);
+      [-2.4, 2.4].forEach((ox) => {
+        part(swing, unitCyl, steel, ox - 0.7, 3.5, 0, 0.08, 3.2, 0.08);
+        part(swing, unitCyl, steel, ox + 0.7, 3.5, 0, 0.08, 3.2, 0.08);
+        part(swing, unitBox, canopyRed, ox, 1.9, 0, 1.9, 0.24, 0.8);
+      });
+
+      const dome = new THREE.Mesh(
+        new THREE.SphereGeometry(4.4, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2),
+        new THREE.MeshBasicMaterial({ color: 0xe0e7ec, wireframe: true }),
+      );
+      dome.position.set(-9, 0.6, 8);
+      playground.add(dome);
+
+      const seesaw = new THREE.Group();
+      seesaw.position.set(6, 0, -9);
+      seesaw.rotation.y = -0.4;
+      playground.add(seesaw);
+      part(seesaw, unitBox, steel, 0, 0.9, 0, 1, 1.8, 2.2);
+      part(seesaw, unitBox, canopyRed, 0, 1.9, 0, 1.1, 0.36, 11, [0.14, 0, 0]);
+      [-4.6, 4.6].forEach((oz) => part(seesaw, unitCyl, steel, 0, 2.2, oz, 0.5, 0.9, 0.5));
+
+      [
+        [-13, -6, 0xe8607f],
+        [12, -3, 0x5cb0d8],
+      ].forEach(([sx, sz, color]) => {
+        const rider = new THREE.Group();
+        rider.position.set(sx, 0, sz);
+        playground.add(rider);
+        part(rider, unitCyl, steel, 0, 0.9, 0, 0.4, 1.8, 0.4);
+        part(rider, blobGeo, new THREE.MeshLambertMaterial({ color }), 0, 2.4, 0, 1.5, 1.2, 2.2);
+      });
+
+      const sport = new THREE.Group();
+      sport.position.set(-46, 0, 132);
+      scene.add(sport);
+      const courtPad = new THREE.Mesh(unitBox, court);
+      courtPad.position.set(0, 0.18, 0);
+      courtPad.scale.set(26, 0.3, 17);
+      courtPad.receiveShadow = true;
+      sport.add(courtPad);
+      const courtLine = new THREE.MeshBasicMaterial({ color: 0xf4f7f8 });
+      [
+        [0, 0, 0.4, 17],
+        [0, -8.2, 26, 0.4],
+        [0, 8.2, 26, 0.4],
+        [-12.8, 0, 0.4, 17],
+        [12.8, 0, 0.4, 17],
+      ].forEach(([lx, lz, lw, ld]) => {
+        const line = new THREE.Mesh(unitBox, courtLine);
+        line.position.set(lx, 0.35, lz);
+        line.scale.set(lw, 0.06, ld);
+        sport.add(line);
+      });
+      [-12.8, 12.8].forEach((ox) => {
+        part(sport, unitCyl, steel, ox, 2.4, 0, 0.4, 4.8, 0.4);
+      });
+      part(sport, unitBox, new THREE.MeshBasicMaterial({ color: 0xdfe6ea, wireframe: true }), 0, 3.4, 0, 25.6, 2, 0.2);
 
       const pavilion = new THREE.Group();
       pavilion.position.set(-10, 0, 8);
@@ -477,40 +593,176 @@ export function PlSunStudy() {
       scene.add(amenity);
 
       const rnd = seeded(42);
-      const trunkGeo = new THREE.CylinderGeometry(0.28, 0.42, 2.4, 6);
-      const canopyGeo = new THREE.SphereGeometry(2.2, 8, 6);
-      const addTree = (x: number, z: number, scale: number, pink: boolean, y = 0) => {
+      const trunkGeo = new THREE.CylinderGeometry(0.24, 0.42, 1, 6);
+
+      type TreeKind = "broadleaf" | "blossom" | "conifer" | "shrub";
+
+      const addTree = (x: number, z: number, scale: number, kind: TreeKind, y = 0) => {
         const g = new THREE.Group();
-        const trunk = new THREE.Mesh(trunkGeo, bark);
-        trunk.position.y = 1.2 * scale;
-        trunk.scale.set(scale, scale, scale);
-        trunk.castShadow = true;
-        const cap = new THREE.Mesh(canopyGeo, pink ? blossom : leaf);
-        cap.position.y = (2.8 + scale * 0.4) * scale;
-        cap.scale.set(scale * 1.1, scale * 0.95, scale * 1.1);
-        cap.castShadow = true;
-        g.add(trunk, cap);
         g.position.set(x, y, z);
+        g.rotation.y = rnd() * Math.PI;
+
+        if (kind === "shrub") {
+          const lumps = 2;
+          for (let i = 0; i < lumps; i += 1) {
+            const r = (0.9 + rnd() * 0.5) * scale;
+            part(
+              g,
+              blobGeo,
+              hedgeMat,
+              (rnd() - 0.5) * 1.6 * scale,
+              r * 0.75,
+              (rnd() - 0.5) * 1.6 * scale,
+              r,
+              r * 0.8,
+              r,
+            );
+          }
+          scene.add(g);
+          return;
+        }
+
+        const trunkH = (kind === "conifer" ? 1.8 : 2.8) * scale;
+        part(g, trunkGeo, bark, 0, trunkH / 2, 0, scale, trunkH, scale);
+
+        if (kind === "conifer") {
+          for (let i = 0; i < 3; i += 1) {
+            const r = (2.5 - i * 0.62) * scale;
+            part(g, coneGeo, coniferMat, 0, (trunkH + 1.1 + i * 1.9) * 1, 0, r, 3.1 * scale, r);
+          }
+        } else {
+          const mats = kind === "blossom" ? [blossom, blossomSoft] : [leafDeep, leafLight, leaf];
+          const lumps = 3;
+          for (let i = 0; i < lumps; i += 1) {
+            const r = (1.5 + rnd() * 0.9) * scale;
+            part(
+              g,
+              blobGeo,
+              mats[Math.floor(rnd() * mats.length)],
+              (rnd() - 0.5) * 2.4 * scale,
+              trunkH + (0.6 + rnd() * 1.5) * scale,
+              (rnd() - 0.5) * 2.4 * scale,
+              r,
+              r * 0.9,
+              r,
+            );
+          }
+        }
         scene.add(g);
       };
 
-      for (let i = 0; i < 90; i += 1) {
+      const addFlowerBed = (x: number, z: number, rx: number, rz: number, count: number) => {
+        const bed = new THREE.Group();
+        bed.position.set(x, 0, z);
+        scene.add(bed);
+        const mulch = new THREE.Mesh(unitCyl, soil);
+        mulch.position.y = 0.24;
+        mulch.scale.set(rx * 2, 0.4, rz * 2);
+        mulch.receiveShadow = true;
+        bed.add(mulch);
+        for (let i = 0; i < count; i += 1) {
+          const a = rnd() * Math.PI * 2;
+          const d = Math.sqrt(rnd());
+          const petal = new THREE.Mesh(petalGeo, petalMats[Math.floor(rnd() * petalMats.length)]);
+          petal.position.set(Math.cos(a) * d * (rx - 0.6), 1.1, Math.sin(a) * d * (rz - 0.6));
+          petal.scale.setScalar(1.1 + rnd() * 0.9);
+          bed.add(petal);
+        }
+      };
+
+      const addBench = (x: number, z: number, yaw: number) => {
+        const g = new THREE.Group();
+        g.position.set(x, 0, z);
+        g.rotation.y = yaw;
+        scene.add(g);
+        part(g, unitBox, timber, 0, 1.15, 0, 5.4, 0.3, 1.6);
+        part(g, unitBox, timber, 0, 1.9, -0.7, 5.4, 1.2, 0.28, [0.2, 0, 0]);
+        [-2.2, 2.2].forEach((ox) => part(g, unitBox, steel, ox, 0.6, 0, 0.28, 1.2, 1.5));
+      };
+
+      const addLamp = (x: number, z: number) => {
+        const g = new THREE.Group();
+        g.position.set(x, 0, z);
+        scene.add(g);
+        part(g, unitCyl, lampMat, 0, 3.6, 0, 0.34, 7.2, 0.34);
+        part(g, unitBox, lampMat, 0.7, 7.1, 0, 1.8, 0.28, 0.28);
+        const bulb = new THREE.Mesh(blobGeo, bulbMat);
+        bulb.position.set(1.5, 6.8, 0);
+        bulb.scale.setScalar(0.55);
+        g.add(bulb);
+      };
+
+      const pondRim = new THREE.Mesh(new THREE.TorusGeometry(22, 1.1, 6, 40), stone);
+      pondRim.rotation.x = -Math.PI / 2;
+      pondRim.position.set(4, 0.5, -62);
+      pondRim.scale.set(0.85, 1.55, 1);
+      pondRim.receiveShadow = true;
+      scene.add(pondRim);
+
+      const courtyardKinds: TreeKind[] = ["broadleaf", "broadleaf", "blossom", "conifer"];
+      for (let i = 0; i < 94; i += 1) {
         const a = rnd() * Math.PI * 2;
-        const r = 42 + rnd() * 78;
-        addTree(Math.cos(a) * r * 0.42, Math.sin(a) * r * 1.55, 0.75 + rnd() * 0.65, rnd() > 0.5);
+        const r = 40 + rnd() * 80;
+        const tx = Math.cos(a) * r * 0.44;
+        const tz = Math.sin(a) * r * 1.6;
+        addTree(tx, tz, 0.7 + rnd() * 0.7, courtyardKinds[Math.floor(rnd() * courtyardKinds.length)]);
       }
+      for (let i = 0; i < 48; i += 1) {
+        const a = rnd() * Math.PI * 2;
+        const r = 30 + rnd() * 92;
+        addTree(Math.cos(a) * r * 0.5, Math.sin(a) * r * 1.7, 0.5 + rnd() * 0.5, "shrub");
+      }
+
+      [
+        [-16, -104, 7, 11, 16],
+        [20, -96, 6, 9, 13],
+        [-22, 44, 6, 10, 14],
+        [24, 62, 7, 9, 14],
+        [-18, 150, 8, 11, 17],
+        [22, 172, 6, 9, 13],
+        [0, -160, 9, 12, 18],
+      ].forEach(([fx, fz, frx, frz, fn]) => addFlowerBed(fx, fz, frx, frz, fn));
+
+      [
+        [-26, -30, 0.3],
+        [28, -12, -0.4],
+        [-28, 70, 0.25],
+        [30, 100, -0.3],
+        [-24, 186, 0.2],
+      ].forEach(([bx, bz, byaw]) => addBench(bx, bz, byaw));
+
+      [
+        [-34, -84],
+        [34, -52],
+        [-34, 24],
+        [34, 40],
+        [-34, 118],
+        [34, 140],
+        [0, 206],
+      ].forEach(([lx, lz]) => addLamp(lx, lz));
+
       DONGS.forEach((dong, i) => {
         const next = DONGS[(i + 1) % DONGS.length];
-        addTree((dong.x + next.x) * 0.5, (dong.z + next.z) * 0.5, 1.05 + rnd() * 0.35, rnd() > 0.42);
-        addTree((dong.x + next.x) * 0.5 + 6, (dong.z + next.z) * 0.5 - 4, 0.85 + rnd() * 0.3, true);
+        const mx = (dong.x + next.x) * 0.5;
+        const mz = (dong.z + next.z) * 0.5;
+        addTree(mx, mz, 1.05 + rnd() * 0.35, rnd() > 0.5 ? "broadleaf" : "conifer");
+        addTree(mx + 7, mz - 5, 0.85 + rnd() * 0.3, "blossom");
+        addTree(mx - 6, mz + 6, 0.5 + rnd() * 0.35, "shrub");
       });
-      for (let i = 0; i < 90; i += 1) {
+
+      for (let i = 0; i < 68; i += 1) {
         const x = -160 + rnd() * 180;
         const z = -350 + rnd() * 70;
-        addTree(x, z, 1 + rnd() * 1.1, rnd() > 0.92, 5);
+        addTree(x, z, 1 + rnd() * 1.1, rnd() > 0.72 ? "conifer" : "broadleaf", 5);
       }
-      for (let i = 0; i < 70; i += 1) {
-        addTree(-175 - rnd() * 28, -220 + rnd() * 420, 1.1 + rnd() * 0.9, false, 6);
+      for (let i = 0; i < 54; i += 1) {
+        addTree(
+          -175 - rnd() * 28,
+          -220 + rnd() * 420,
+          1.1 + rnd() * 0.9,
+          rnd() > 0.6 ? "conifer" : "broadleaf",
+          6,
+        );
       }
 
       for (let i = 0; i < 9; i += 1) {
