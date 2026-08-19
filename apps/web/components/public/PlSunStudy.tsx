@@ -21,6 +21,7 @@ const PHI_MIN = 0.18;
 const PHI_MAX = 1.18;
 const RADIUS_MIN = 360;
 const RADIUS_MAX = 1100;
+const HEIGHT_GAIN = 5 / 3;
 
 const DONGS: Mass[] = (
   [
@@ -41,8 +42,8 @@ const DONGS: Mass[] = (
   name: d.name,
   x: d.x,
   z: d.z,
-  h: d.h,
-  floors: d.floors,
+  h: d.h * HEIGHT_GAIN,
+  floors: Math.round(d.floors * HEIGHT_GAIN),
   kind: d.kind,
   yaw: Math.atan2(d.x, d.z) + d.spin,
 }));
@@ -188,13 +189,13 @@ export function PlSunStudy() {
       sunLight.shadow.mapSize.set(2048, 2048);
       sunLight.shadow.bias = -0.00028;
       sunLight.shadow.normalBias = 0.036;
-      const shadowSpan = 360;
+      const shadowSpan = 460;
       sunLight.shadow.camera.left = -shadowSpan;
       sunLight.shadow.camera.right = shadowSpan;
       sunLight.shadow.camera.top = shadowSpan;
       sunLight.shadow.camera.bottom = -shadowSpan;
       sunLight.shadow.camera.near = 16;
-      sunLight.shadow.camera.far = 820;
+      sunLight.shadow.camera.far = 1100;
       scene.add(sunLight);
       scene.add(sunLight.target);
 
