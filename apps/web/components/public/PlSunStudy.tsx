@@ -21,7 +21,15 @@ const PHI_MIN = 0.18;
 const PHI_MAX = 1.18;
 const RADIUS_MIN = 360;
 const RADIUS_MAX = 1100;
-const HEIGHT_GAIN = 5 / 3;
+const HEIGHT_GAIN = 20 / 9;
+
+const SITE_LATITUDE = 37.5665;
+const SITE_LONGITUDE = 126.978;
+const STANDARD_MERIDIAN = 135;
+const WINTER_SOLSTICE_DAY = 356;
+const SUN_LIGHT_DISTANCE = 900;
+const SUN_DISC_DISTANCE = 313;
+const SUN_DISC_RADIUS = 18;
 
 const DONGS: Mass[] = (
   [
@@ -63,19 +71,72 @@ function formatClock(t: number) {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-function sunPolar(t: number) {
-  const azimuth = ((90 + t * 180) * Math.PI) / 180;
-  const elevation = Math.max(0.12, Math.sin(t * Math.PI) * 0.52);
-  return { azimuth, elevation };
+function toRad(deg: number) {
+  return (deg * Math.PI) / 180;
 }
 
-function formatPhase(t: number, elevation: number) {
-  const deg = Math.round((elevation * 180) / Math.PI);
-  if (t < 0.18) return `동향 일조 · 고도 ${deg}°`;
-  if (t < 0.45) return `남동면 · 고도 ${deg}°`;
-  if (t < 0.58) return `남향 일조 · 고도 ${deg}°`;
-  if (t < 0.82) return `남서면 · 고도 ${deg}°`;
-  return `서향 일조 · 고도 ${deg}°`;
+function toDeg(rad: number) {
+  return (rad * 180) / Math.PI;
+}
+
+/** Cooper (1969) declination approximation. */
+function solarDeclination(dayOfYear: number) {
+  return toRad(23.45) * Math.sin(toRad((360 / 365) * (284 + dayOfYear)));
+}
+
+/** Equation of time in minutes, from the standard Spencer-style series. */
+function equationOfTime(dayOfYear: number) {
+  const b = toRad((360 / 364) * (dayOfYear - 81));
+  return 9.87 * Math.sin(2 * b) - 7.53 * Math.cos(b) - 1.5 * Math.sin(b);
+}
+
+/**
+ * Solar altitude and azimuth for the site, from standard-clock hour.
+ * Azimuth is measured clockwise from true north, matching the scene where
+ * -Z is north and +X is east.
+ */
+function sunPosition(clockHour: number) {
+  const declination = solarDeclination(WINTER_SOLSTICE_DAY);
+  const minutesFromStandard = 4 * (SITE_LONGITUDE - STANDARD_MERIDIAN) + equationOfTime(WINTER_SOLSTICE_DAY);
+  const solarHour = clockHour + minutesFromStandard / 60;
+  const hourAngle = toRad(15 * (solarHour - 12));
+  const latitude = toRad(SITE_LATITUDE);
+
+  const sinAltitude = clamp(
+    Math.sin(latitude) * Math.sin(declination) +
+      Math.cos(latitude) * Math.cos(declination) * Math.cos(hourAngle),
+    -1,
+    1,
+  );
+  const altitude = Math.asin(sinAltitude);
+
+  const cosAzimuth = clamp(
+    (Math.sin(declination) - sinAltitude * Math.sin(latitude)) / (Math.cos(altitude) * Math.cos(latitude)),
+    -1,
+    1,
+  );
+  const azimuth = hourAngle > 0 ? 2 * Math.PI - Math.acos(cosAzimuth) : Math.acos(cosAzimuth);
+
+  return { altitude, azimuth };
+}
+
+/**
+ * Clear-sky direct beam fraction using Kasten-Young air mass and the
+ * 0.7^(AM^0.678) attenuation model.
+ */
+function directBeamFraction(altitude: number) {
+  if (altitude <= 0) return 0;
+  const altitudeDeg = toDeg(altitude);
+  const airMass = 1 / (Math.sin(altitude) + 0.50572 * Math.pow(altitudeDeg + 6.07995, -1.6364));
+  return Math.pow(0.7, Math.pow(airMass, 0.678));
+}
+
+const COMPASS_POINTS = ["북", "북동", "동", "남동", "남", "남서", "서", "북서"] as const;
+
+function formatPhase(altitude: number, azimuth: number) {
+  const azimuthDeg = toDeg(azimuth);
+  const point = COMPASS_POINTS[Math.round(azimuthDeg / 45) % 8];
+  return `${point} ${azimuthDeg.toFixed(0)}° · 고도 ${toDeg(altitude).toFixed(1)}°`;
 }
 
 function seeded(seed: number) {
@@ -194,13 +255,13 @@ export function PlSunStudy() {
       sunLight.shadow.camera.right = shadowSpan;
       sunLight.shadow.camera.top = shadowSpan;
       sunLight.shadow.camera.bottom = -shadowSpan;
-      sunLight.shadow.camera.near = 16;
-      sunLight.shadow.camera.far = 1100;
+      sunLight.shadow.camera.near = SUN_LIGHT_DISTANCE - shadowSpan;
+      sunLight.shadow.camera.far = SUN_LIGHT_DISTANCE + shadowSpan;
       scene.add(sunLight);
       scene.add(sunLight.target);
 
       const sunMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(3.6, 24, 24),
+        new THREE.SphereGeometry(SUN_DISC_RADIUS, 32, 32),
         new THREE.MeshBasicMaterial({ color: 0xfff4c8 }),
       );
       scene.add(sunMesh);
@@ -575,22 +636,28 @@ export function PlSunStudy() {
 
       let duskApplied: boolean | null = null;
       const applySun = (t: number) => {
-        const { azimuth, elevation } = sunPolar(t);
-        const dist = 340;
-        const x = Math.sin(azimuth) * Math.cos(elevation) * dist;
-        const y = Math.sin(elevation) * dist;
-        const z = -Math.cos(azimuth) * Math.cos(elevation) * dist;
-        sunLight.position.set(x, y, z);
-        sunMesh.position.set(x * 0.92, y * 0.92, z * 0.92);
-        const warmth = 1 - Math.sin(t * Math.PI);
-        sunLight.color.setRGB(1, 0.93 - warmth * 0.18, 0.78 - warmth * 0.28);
-        sunLight.intensity = 1.15 + Math.sin(elevation) * 1.35;
-        hemi.intensity = 0.3 + Math.sin(elevation) * 0.4;
+        const { altitude, azimuth } = sunPosition(hourFromT(t));
+        const horizontal = Math.cos(altitude);
+        const dirX = Math.sin(azimuth) * horizontal;
+        const dirY = Math.sin(altitude);
+        const dirZ = -Math.cos(azimuth) * horizontal;
+        sunLight.position.set(
+          dirX * SUN_LIGHT_DISTANCE,
+          dirY * SUN_LIGHT_DISTANCE,
+          dirZ * SUN_LIGHT_DISTANCE,
+        );
+        sunMesh.position.set(dirX * SUN_DISC_DISTANCE, dirY * SUN_DISC_DISTANCE, dirZ * SUN_DISC_DISTANCE);
+
+        const beam = directBeamFraction(altitude);
+        const warmth = clamp(1 - toDeg(altitude) / 30, 0, 1);
+        sunLight.color.setRGB(1, 0.93 - warmth * 0.2, 0.78 - warmth * 0.34);
+        sunLight.intensity = 0.32 + beam * 3.4;
+        hemi.intensity = 0.34 + Math.max(0, dirY) * 0.5;
         const sky = new THREE.Color().setHSL(0.58 - warmth * 0.08, 0.32, 0.64 - warmth * 0.22);
         scene.background = sky;
         scene.fog = new THREE.Fog(sky.getHex(), 560, 1480);
         renderer?.setClearColor(sky, 1);
-        const dusk = t > 0.82 || t < 0.1;
+        const dusk = toDeg(altitude) < 8;
         if (duskApplied !== dusk) {
           duskApplied = dusk;
           for (const item of buildings) {
@@ -604,7 +671,7 @@ export function PlSunStudy() {
           }
         }
         if (timeRef.current) timeRef.current.textContent = formatClock(t);
-        if (phaseRef.current) phaseRef.current.textContent = formatPhase(t, elevation);
+        if (phaseRef.current) phaseRef.current.textContent = formatPhase(altitude, azimuth);
         if (sliderRef.current) {
           if (document.activeElement !== sliderRef.current) {
             sliderRef.current.value = String(t);
@@ -722,14 +789,14 @@ export function PlSunStudy() {
       ref={rootRef}
       className={`pl-sunstudy${full ? " is-full" : ""}`}
       role="img"
-      aria-label="좌우를 좁히고 남북으로 길쭉한 중정을 12개 동이 둘러싼 단지 3D 일조 시뮬레이션. 좌우 드래그는 동서 회전, 상하 드래그는 남북 각도입니다."
+      aria-label="서울 위도 기준 동지일 태양 궤도를 계산해 12개 동의 그림자를 재현한 3D 일조 시뮬레이션. 좌우 드래그는 동서 회전, 상하 드래그는 남북 각도입니다."
     >
       <div ref={hostRef} className="pl-sunstudy__stage" />
       <div className="pl-sunstudy__chrome">
         <span className="pl-sunstudy__time">
-          <b>동지일</b>
+          <b>동지일 서울</b>
           <span ref={timeRef}>10:48</span>
-          <em ref={phaseRef}>남향 일조 · 고도 28°</em>
+          <em ref={phaseRef}>남 172° · 고도 28.5°</em>
         </span>
         <div className="pl-sunstudy__tools">
           <div ref={compassRef} className="pl-sunstudy__compass" aria-hidden="true">
@@ -815,7 +882,9 @@ export function PlSunStudy() {
           />
         </label>
       </div>
-      <p className="pl-sunstudy__hint">좌우 드래그 동서 · 상하 드래그 남북 · 스크롤 거리</p>
+      <p className="pl-sunstudy__hint">
+        좌우 드래그 동서 · 상하 드래그 남북 · 스크롤 거리 — 북위 37.57° 동지일 실제 태양 궤도 기준
+      </p>
     </div>
   );
 }
