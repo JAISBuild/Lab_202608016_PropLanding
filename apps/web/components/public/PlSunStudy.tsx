@@ -12,6 +12,7 @@ type Mass = {
   floors: number;
   kind: Kind;
   yaw: number;
+  facing: string;
 };
 
 const DAY_MS = 22000;
@@ -30,6 +31,30 @@ const WINTER_SOLSTICE_DAY = 356;
 const SUN_LIGHT_DISTANCE = 900;
 const SUN_DISC_DISTANCE = 313;
 const SUN_DISC_RADIUS = 18;
+const LABEL_SCALE = 90;
+
+const COMPASS_POINTS = ["북", "북동", "동", "남동", "남", "남서", "서", "북서"] as const;
+
+function toRad(deg: number) {
+  return (deg * Math.PI) / 180;
+}
+
+function toDeg(rad: number) {
+  return (rad * 180) / Math.PI;
+}
+
+function compassPoint(azimuthDeg: number) {
+  const normalized = ((azimuthDeg % 360) + 360) % 360;
+  return COMPASS_POINTS[Math.round(normalized / 45) % 8];
+}
+
+/**
+ * A dong's front elevation looks along its local -Z, which after the yaw
+ * rotation points back at the courtyard, so the facing azimuth is -yaw.
+ */
+function facingLabel(yaw: number) {
+  return `${compassPoint(-toDeg(yaw))}향`;
+}
 
 const DONGS: Mass[] = (
   [
@@ -46,15 +71,19 @@ const DONGS: Mass[] = (
     { name: "111동", x: 76, z: -236, h: 74, floors: 24, kind: "why", spin: 0.05 },
     { name: "112동", x: -6, z: -268, h: 70, floors: 23, kind: "tee", spin: -0.06 },
   ] as const
-).map((d) => ({
-  name: d.name,
-  x: d.x,
-  z: d.z,
-  h: d.h * HEIGHT_GAIN,
-  floors: Math.round(d.floors * HEIGHT_GAIN),
-  kind: d.kind,
-  yaw: Math.atan2(d.x, d.z) + d.spin,
-}));
+).map((d) => {
+  const yaw = Math.atan2(d.x, d.z) + d.spin;
+  return {
+    name: d.name,
+    x: d.x,
+    z: d.z,
+    h: d.h * HEIGHT_GAIN,
+    floors: Math.round(d.floors * HEIGHT_GAIN),
+    kind: d.kind,
+    yaw,
+    facing: facingLabel(yaw),
+  };
+});
 
 function clamp(n: number, a: number, b: number) {
   return Math.max(a, Math.min(b, n));
@@ -69,14 +98,6 @@ function formatClock(t: number) {
   const h = Math.floor(hour);
   const m = Math.floor((hour - h) * 60);
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-}
-
-function toRad(deg: number) {
-  return (deg * Math.PI) / 180;
-}
-
-function toDeg(rad: number) {
-  return (rad * 180) / Math.PI;
 }
 
 /** Cooper (1969) declination approximation. */
@@ -131,12 +152,9 @@ function directBeamFraction(altitude: number) {
   return Math.pow(0.7, Math.pow(airMass, 0.678));
 }
 
-const COMPASS_POINTS = ["북", "북동", "동", "남동", "남", "남서", "서", "북서"] as const;
-
 function formatPhase(altitude: number, azimuth: number) {
   const azimuthDeg = toDeg(azimuth);
-  const point = COMPASS_POINTS[Math.round(azimuthDeg / 45) % 8];
-  return `${point} ${azimuthDeg.toFixed(0)}° · 고도 ${toDeg(altitude).toFixed(1)}°`;
+  return `${compassPoint(azimuthDeg)} ${azimuthDeg.toFixed(0)}° · 고도 ${toDeg(altitude).toFixed(1)}°`;
 }
 
 function seeded(seed: number) {
@@ -512,25 +530,30 @@ export function PlSunStudy() {
         return map;
       };
 
-      const makeLabel = (text: string) => {
+      const makeLabel = (
+        text: string,
+        opts: { scale?: number; background?: string; color?: string } = {},
+      ) => {
+        const { scale = LABEL_SCALE, background = "rgba(27,19,40,0.86)", color = "#ffffff" } = opts;
         const canvas = document.createElement("canvas");
-        canvas.width = 256;
-        canvas.height = 64;
+        canvas.width = 512;
+        canvas.height = 128;
         const ctx = canvas.getContext("2d");
         if (!ctx) return null;
-        ctx.fillStyle = "rgba(27,19,40,0.82)";
-        ctx.fillRect(8, 12, 240, 40);
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "700 28px Pretendard, sans-serif";
+        ctx.fillStyle = background;
+        ctx.fillRect(16, 24, 480, 80);
+        ctx.fillStyle = color;
+        ctx.font = "700 56px Pretendard, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(text, 128, 32);
+        ctx.fillText(text, 256, 66);
         const map = new THREE.CanvasTexture(canvas);
         map.colorSpace = THREE.SRGBColorSpace;
+        map.anisotropy = 8;
         const sprite = new THREE.Sprite(
           new THREE.SpriteMaterial({ map, transparent: true, depthTest: false }),
         );
-        sprite.scale.set(18, 4.5, 1);
+        sprite.scale.set(scale, scale / 4, 1);
         sprite.renderOrder = 2;
         return sprite;
       };
@@ -620,19 +643,51 @@ export function PlSunStudy() {
         }
         const label = makeLabel(b.name);
         if (label) {
-          label.position.set(b.x, b.h + 12, b.z);
+          label.position.set(b.x, b.h + 20, b.z);
           scene.add(label);
+        }
+        const facing = makeLabel(b.facing, {
+          scale: LABEL_SCALE * 0.8,
+          background: "rgba(200,235,74,0.92)",
+          color: "#1b1328",
+        });
+        if (facing) {
+          facing.position.set(b.x, b.h + 46, b.z);
+          scene.add(facing);
         }
         scene.add(root);
       };
 
       DONGS.forEach(addDong);
 
-      const amenityLabel = makeLabel("커뮤니티");
+      const amenityLabel = makeLabel("커뮤니티", { scale: 34 });
       if (amenityLabel) {
-        amenityLabel.position.set(6, 14, 148);
+        amenityLabel.position.set(6, 16, 148);
         scene.add(amenityLabel);
       }
+
+      const pinMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      const pinGeo = new THREE.CylinderGeometry(1.2, 1.2, 30, 8);
+      const bearings: [string, number, number][] = [
+        ["N 북", 0, -318],
+        ["S 남", 0, 318],
+        ["E 동", 186, 0],
+        ["W 서", -186, 0],
+      ];
+      bearings.forEach(([text, bx, bz]) => {
+        const marker = makeLabel(text, {
+          scale: 66,
+          background: "rgba(255,255,255,0.95)",
+          color: "#1b1328",
+        });
+        if (!marker) return;
+        marker.position.set(bx, 46, bz);
+        scene.add(marker);
+
+        const pin = new THREE.Mesh(pinGeo, pinMat);
+        pin.position.set(bx, 15, bz);
+        scene.add(pin);
+      });
 
       let duskApplied: boolean | null = null;
       const applySun = (t: number) => {
