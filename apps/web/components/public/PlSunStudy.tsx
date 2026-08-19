@@ -31,7 +31,8 @@ const WINTER_SOLSTICE_DAY = 356;
 const SUN_LIGHT_DISTANCE = 900;
 const SUN_DISC_DISTANCE = 820;
 const SUN_DISC_RADIUS = 47;
-const LABEL_SCALE = 90;
+const LABEL_HEIGHT = 21;
+const ROAD_WIDTH = 56;
 
 const COMPASS_POINTS = ["북", "북동", "동", "남동", "남", "남서", "서", "북서"] as const;
 
@@ -329,22 +330,59 @@ export function PlSunStudy() {
       hillW.rotation.z = 0.08;
       scene.add(hillW);
 
-      const southRoad = new THREE.Mesh(new THREE.PlaneGeometry(360, 28), asphalt);
-      southRoad.rotation.x = -Math.PI / 2;
-      southRoad.position.set(10, 0.04, 308);
-      southRoad.receiveShadow = true;
-      scene.add(southRoad);
-      const eastRoad = new THREE.Mesh(new THREE.PlaneGeometry(28, 640), asphalt);
-      eastRoad.rotation.x = -Math.PI / 2;
-      eastRoad.position.set(158, 0.05, 8);
-      eastRoad.receiveShadow = true;
-      scene.add(eastRoad);
+      const centerLineMat = new THREE.MeshBasicMaterial({ color: 0xe8c33c });
+      const laneMat = new THREE.MeshBasicMaterial({ color: 0xeef2f5 });
 
-      for (let i = 0; i < 6; i += 1) {
-        const stripe = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 12), white);
-        stripe.rotation.x = -Math.PI / 2;
-        stripe.position.set(142 + i * 2.4, 0.07, 308);
-        scene.add(stripe);
+      const addRoad = (axis: "x" | "z", center: number, along: number, length: number) => {
+        const width = ROAD_WIDTH;
+        const half = width / 2;
+        const road = new THREE.Mesh(
+          axis === "x"
+            ? new THREE.PlaneGeometry(length, width)
+            : new THREE.PlaneGeometry(width, length),
+          asphalt,
+        );
+        road.rotation.x = -Math.PI / 2;
+        road.position.set(axis === "x" ? along : center, 0.04, axis === "x" ? center : along);
+        road.receiveShadow = true;
+        scene.add(road);
+
+        const place = (offset: number, spanLength: number, spanWidth: number, at: number, mat: import("three").Material) => {
+          const strip = new THREE.Mesh(
+            axis === "x"
+              ? new THREE.PlaneGeometry(spanLength, spanWidth)
+              : new THREE.PlaneGeometry(spanWidth, spanLength),
+            mat,
+          );
+          strip.rotation.x = -Math.PI / 2;
+          strip.position.set(
+            axis === "x" ? at : center + offset,
+            0.11,
+            axis === "x" ? center + offset : at,
+          );
+          scene.add(strip);
+        };
+
+        [-1.4, 1.4].forEach((o) => place(o, length - 6, 0.9, along, centerLineMat));
+        [-half + 1.6, half - 1.6].forEach((o) => place(o, length - 6, 0.7, along, laneMat));
+
+        const dash = 9;
+        const gap = 11;
+        const start = along - length / 2 + 6;
+        for (let d = 0; d * (dash + gap) < length - 12; d += 1) {
+          const at = start + d * (dash + gap) + dash / 2;
+          [-half / 2, half / 2].forEach((o) => place(o, dash, 0.7, at, laneMat));
+        }
+      };
+
+      addRoad("x", 322, 10, 460);
+      addRoad("z", 178, 8, 700);
+
+      for (let i = 0; i < 7; i += 1) {
+        const bar = new THREE.Mesh(new THREE.PlaneGeometry(3.4, ROAD_WIDTH - 4), laneMat);
+        bar.rotation.x = -Math.PI / 2;
+        bar.position.set(-6 + i * 7, 0.12, 322);
+        scene.add(bar);
       }
 
       const dropoff = new THREE.Mesh(new THREE.CylinderGeometry(20, 20, 0.35, 40), pathMat);
@@ -476,7 +514,7 @@ export function PlSunStudy() {
       }
 
       for (let i = 0; i < 9; i += 1) {
-        const hx = 178 + (i % 3) * 16;
+        const hx = 258 + (i % 3) * 16;
         const hz = -40 + Math.floor(i / 3) * 24 + rnd() * 4;
         const house = shadowed(new THREE.Mesh(new THREE.BoxGeometry(8, 5.2, 7.2), wallHouse));
         house.position.set(hx, 2.6, hz);
@@ -531,30 +569,93 @@ export function PlSunStudy() {
         return map;
       };
 
+      const LABEL_TONES = {
+        ink: { top: "#4a3c68", bottom: "#1d1530", edge: "rgba(255,255,255,0.34)", text: "#ffffff" },
+        lime: { top: "#e2fa7d", bottom: "#a9cf22", edge: "rgba(255,255,255,0.65)", text: "#1b1328" },
+        cream: { top: "#ffffff", bottom: "#ddd6c8", edge: "rgba(255,255,255,0.9)", text: "#1b1328" },
+      } as const;
+
+      const roundedPath = (
+        ctx: CanvasRenderingContext2D,
+        x: number,
+        y: number,
+        w: number,
+        h: number,
+        r: number,
+      ) => {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+      };
+
       const makeLabel = (
         text: string,
-        opts: { scale?: number; background?: string; color?: string } = {},
+        opts: { height?: number; tone?: keyof typeof LABEL_TONES } = {},
       ) => {
-        const { scale = LABEL_SCALE, background = "rgba(27,19,40,0.86)", color = "#ffffff" } = opts;
+        const { height = LABEL_HEIGHT, tone = "ink" } = opts;
+        const palette = LABEL_TONES[tone];
+        const font = "800 64px Pretendard, 'Noto Sans KR', sans-serif";
+        const padX = 30;
+        const padY = 18;
+
+        const gauge = document.createElement("canvas").getContext("2d");
+        if (!gauge) return null;
+        gauge.font = font;
+        const textWidth = Math.ceil(gauge.measureText(text).width);
+
+        const boxW = textWidth + padX * 2;
+        const boxH = 64 + padY * 2;
+        const margin = 18;
+
         const canvas = document.createElement("canvas");
-        canvas.width = 512;
-        canvas.height = 128;
+        canvas.width = boxW + margin * 2;
+        canvas.height = boxH + margin * 2;
         const ctx = canvas.getContext("2d");
         if (!ctx) return null;
-        ctx.fillStyle = background;
-        ctx.fillRect(16, 24, 480, 80);
-        ctx.fillStyle = color;
-        ctx.font = "700 56px Pretendard, sans-serif";
+
+        const grad = ctx.createLinearGradient(0, margin, 0, margin + boxH);
+        grad.addColorStop(0, palette.top);
+        grad.addColorStop(1, palette.bottom);
+
+        ctx.shadowColor = "rgba(12,8,24,0.5)";
+        ctx.shadowBlur = 16;
+        ctx.shadowOffsetY = 8;
+        ctx.fillStyle = grad;
+        roundedPath(ctx, margin, margin, boxW, boxH, boxH / 2.6);
+        ctx.fill();
+
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetY = 0;
+        ctx.strokeStyle = palette.edge;
+        ctx.lineWidth = 3;
+        roundedPath(ctx, margin + 1.5, margin + 1.5, boxW - 3, boxH - 3, boxH / 2.6);
+        ctx.stroke();
+
+        ctx.fillStyle = palette.text;
+        ctx.font = font;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(text, 256, 66);
+        ctx.fillText(text, margin + boxW / 2, margin + boxH / 2 + 3);
+
         const map = new THREE.CanvasTexture(canvas);
         map.colorSpace = THREE.SRGBColorSpace;
         map.anisotropy = 8;
+        map.generateMipmaps = false;
+        map.minFilter = THREE.LinearFilter;
         const sprite = new THREE.Sprite(
           new THREE.SpriteMaterial({ map, transparent: true, depthTest: false }),
         );
-        sprite.scale.set(scale, scale / 4, 1);
+        const unit = height / boxH;
+        sprite.scale.set(canvas.width * unit, canvas.height * unit, 1);
         sprite.renderOrder = 2;
         return sprite;
       };
@@ -647,13 +748,9 @@ export function PlSunStudy() {
           label.position.set(b.x, b.h + 20, b.z);
           scene.add(label);
         }
-        const facing = makeLabel(b.facing, {
-          scale: LABEL_SCALE * 0.8,
-          background: "rgba(200,235,74,0.92)",
-          color: "#1b1328",
-        });
+        const facing = makeLabel(b.facing, { height: LABEL_HEIGHT * 0.85, tone: "lime" });
         if (facing) {
-          facing.position.set(b.x, b.h + 46, b.z);
+          facing.position.set(b.x, b.h + 48, b.z);
           scene.add(facing);
         }
         scene.add(root);
@@ -661,33 +758,23 @@ export function PlSunStudy() {
 
       DONGS.forEach(addDong);
 
-      const amenityLabel = makeLabel("커뮤니티", { scale: 34 });
+      const amenityLabel = makeLabel("커뮤니티", { height: 11 });
       if (amenityLabel) {
         amenityLabel.position.set(6, 16, 148);
         scene.add(amenityLabel);
       }
 
-      const pinMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-      const pinGeo = new THREE.CylinderGeometry(1.2, 1.2, 30, 8);
       const bearings: [string, number, number][] = [
-        ["N 북", 0, -318],
-        ["S 남", 0, 318],
-        ["E 동", 186, 0],
-        ["W 서", -186, 0],
+        ["N 북", 0, -302],
+        ["S 남", 0, 302],
+        ["E 동", 214, 0],
+        ["W 서", -214, 0],
       ];
       bearings.forEach(([text, bx, bz]) => {
-        const marker = makeLabel(text, {
-          scale: 66,
-          background: "rgba(255,255,255,0.95)",
-          color: "#1b1328",
-        });
+        const marker = makeLabel(text, { height: 17, tone: "cream" });
         if (!marker) return;
-        marker.position.set(bx, 46, bz);
+        marker.position.set(bx, 34, bz);
         scene.add(marker);
-
-        const pin = new THREE.Mesh(pinGeo, pinMat);
-        pin.position.set(bx, 15, bz);
-        scene.add(pin);
       });
 
       let duskApplied: boolean | null = null;
