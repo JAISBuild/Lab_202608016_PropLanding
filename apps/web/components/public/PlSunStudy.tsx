@@ -29,8 +29,8 @@ const SITE_LONGITUDE = 126.978;
 const STANDARD_MERIDIAN = 135;
 const WINTER_SOLSTICE_DAY = 356;
 const SUN_LIGHT_DISTANCE = 900;
-const SUN_DISC_DISTANCE = 313;
-const SUN_DISC_RADIUS = 18;
+const SUN_DISC_DISTANCE = 820;
+const SUN_DISC_RADIUS = 47;
 const LABEL_SCALE = 90;
 
 const COMPASS_POINTS = ["북", "북동", "동", "남동", "남", "남서", "서", "북서"] as const;
@@ -48,31 +48,32 @@ function compassPoint(azimuthDeg: number) {
   return COMPASS_POINTS[Math.round(normalized / 45) % 8];
 }
 
-/**
- * A dong's front elevation looks along its local -Z, which after the yaw
- * rotation points back at the courtyard, so the facing azimuth is -yaw.
- */
-function facingLabel(yaw: number) {
-  return `${compassPoint(-toDeg(yaw))}향`;
+/** A dong's living-room elevation looks along its local -Z, so its azimuth is -yaw. */
+function facingAzimuth(yaw: number) {
+  return ((-toDeg(yaw) % 360) + 360) % 360;
+}
+
+function yawForFacing(azimuthDeg: number) {
+  return toRad(-azimuthDeg);
 }
 
 const DONGS: Mass[] = (
   [
-    { name: "101동", x: -86, z: -238, h: 78, floors: 26, kind: "why", spin: 0.12 },
-    { name: "102동", x: -98, z: -128, h: 90, floors: 30, kind: "tee", spin: -0.08 },
-    { name: "103동", x: -102, z: -16, h: 96, floors: 32, kind: "why", spin: 0.06 },
-    { name: "104동", x: -96, z: 100, h: 84, floors: 28, kind: "tee", spin: -0.1 },
-    { name: "105동", x: -78, z: 210, h: 72, floors: 24, kind: "why", spin: 0.08 },
-    { name: "106동", x: 8, z: 258, h: 80, floors: 26, kind: "tee", spin: -0.06 },
-    { name: "107동", x: 82, z: 202, h: 66, floors: 22, kind: "why", spin: 0.1 },
-    { name: "108동", x: 100, z: 94, h: 75, floors: 25, kind: "tee", spin: -0.08 },
-    { name: "109동", x: 102, z: -20, h: 88, floors: 29, kind: "why", spin: 0.06 },
-    { name: "110동", x: 94, z: -130, h: 81, floors: 27, kind: "tee", spin: -0.1 },
-    { name: "111동", x: 76, z: -236, h: 74, floors: 24, kind: "why", spin: 0.05 },
-    { name: "112동", x: -6, z: -268, h: 70, floors: 23, kind: "tee", spin: -0.06 },
+    { name: "101동", x: -86, z: -238, h: 78, floors: 26, kind: "why", face: 178 },
+    { name: "102동", x: -98, z: -128, h: 90, floors: 30, kind: "tee", face: 152 },
+    { name: "103동", x: -102, z: -16, h: 96, floors: 32, kind: "why", face: 172 },
+    { name: "104동", x: -96, z: 100, h: 84, floors: 28, kind: "tee", face: 150 },
+    { name: "105동", x: -78, z: 210, h: 72, floors: 24, kind: "why", face: 180 },
+    { name: "106동", x: 8, z: 258, h: 80, floors: 26, kind: "tee", face: 186 },
+    { name: "107동", x: 82, z: 202, h: 66, floors: 22, kind: "why", face: 212 },
+    { name: "108동", x: 100, z: 94, h: 75, floors: 25, kind: "tee", face: 208 },
+    { name: "109동", x: 102, z: -20, h: 88, floors: 29, kind: "why", face: 190 },
+    { name: "110동", x: 94, z: -130, h: 81, floors: 27, kind: "tee", face: 205 },
+    { name: "111동", x: 76, z: -236, h: 74, floors: 24, kind: "why", face: 176 },
+    { name: "112동", x: -6, z: -268, h: 70, floors: 23, kind: "tee", face: 182 },
   ] as const
 ).map((d) => {
-  const yaw = Math.atan2(d.x, d.z) + d.spin;
+  const yaw = yawForFacing(d.face);
   return {
     name: d.name,
     x: d.x,
@@ -81,7 +82,7 @@ const DONGS: Mass[] = (
     floors: Math.round(d.floors * HEIGHT_GAIN),
     kind: d.kind,
     yaw,
-    facing: facingLabel(yaw),
+    facing: `${compassPoint(facingAzimuth(yaw))}향`,
   };
 });
 
@@ -280,7 +281,7 @@ export function PlSunStudy() {
 
       const sunMesh = new THREE.Mesh(
         new THREE.SphereGeometry(SUN_DISC_RADIUS, 32, 32),
-        new THREE.MeshBasicMaterial({ color: 0xfff4c8 }),
+        new THREE.MeshBasicMaterial({ color: 0xfff4c8, fog: false }),
       );
       scene.add(sunMesh);
 
@@ -844,7 +845,7 @@ export function PlSunStudy() {
       ref={rootRef}
       className={`pl-sunstudy${full ? " is-full" : ""}`}
       role="img"
-      aria-label="서울 위도 기준 동지일 태양 궤도를 계산해 12개 동의 그림자를 재현한 3D 일조 시뮬레이션. 좌우 드래그는 동서 회전, 상하 드래그는 남북 각도입니다."
+      aria-label="서울 위도 기준 동지일 태양 궤도를 계산해 12개 동의 그림자를 재현한 3D 일조 시뮬레이션. 동서남북 방위와 동별 남향·남동향·남서향 표시를 함께 보여 줍니다. 좌우 드래그는 동서 회전, 상하 드래그는 남북 각도입니다."
     >
       <div ref={hostRef} className="pl-sunstudy__stage" />
       <div className="pl-sunstudy__chrome">
