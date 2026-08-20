@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type Kind = "why" | "tee";
 
@@ -24,8 +24,8 @@ const RADIUS_MIN = 360;
 const RADIUS_MAX = 1100;
 const HEIGHT_GAIN = 20 / 9;
 
-const SITE_LATITUDE = 37.5665;
-const SITE_LONGITUDE = 126.978;
+const DEFAULT_SITE_LATITUDE = 37.5665;
+const DEFAULT_SITE_LONGITUDE = 126.978;
 const STANDARD_MERIDIAN = 135;
 const WINTER_SOLSTICE_DAY = 356;
 const SUN_LIGHT_DISTANCE = 900;
@@ -58,34 +58,52 @@ function yawForFacing(azimuthDeg: number) {
   return toRad(-azimuthDeg);
 }
 
-const DONGS: Mass[] = (
-  [
-    { name: "101동", x: -86, z: -238, h: 78, floors: 26, kind: "why", face: 178 },
-    { name: "102동", x: -98, z: -128, h: 90, floors: 30, kind: "tee", face: 152 },
-    { name: "103동", x: -102, z: -16, h: 96, floors: 32, kind: "why", face: 172 },
-    { name: "104동", x: -96, z: 100, h: 84, floors: 28, kind: "tee", face: 150 },
-    { name: "105동", x: -78, z: 210, h: 72, floors: 24, kind: "why", face: 180 },
-    { name: "106동", x: 8, z: 258, h: 80, floors: 26, kind: "tee", face: 186 },
-    { name: "107동", x: 82, z: 202, h: 66, floors: 22, kind: "why", face: 212 },
-    { name: "108동", x: 100, z: 94, h: 75, floors: 25, kind: "tee", face: 208 },
-    { name: "109동", x: 102, z: -20, h: 88, floors: 29, kind: "why", face: 190 },
-    { name: "110동", x: 94, z: -130, h: 81, floors: 27, kind: "tee", face: 205 },
-    { name: "111동", x: 76, z: -236, h: 74, floors: 24, kind: "why", face: 176 },
-    { name: "112동", x: -6, z: -268, h: 70, floors: 23, kind: "tee", face: 182 },
-  ] as const
-).map((d) => {
-  const yaw = yawForFacing(d.face);
-  return {
-    name: d.name,
-    x: d.x,
-    z: d.z,
-    h: d.h * HEIGHT_GAIN,
-    floors: Math.round(d.floors * HEIGHT_GAIN),
-    kind: d.kind,
-    yaw,
-    facing: `${compassPoint(facingAzimuth(yaw))}향`,
-  };
-});
+export type SunStudyDongInput = {
+  name: string;
+  x: number;
+  z: number;
+  h: number;
+  floors: number;
+  kind: Kind;
+  face: number;
+};
+
+export type SunStudyConfig = {
+  latitude?: number;
+  longitude?: number;
+  dongs?: SunStudyDongInput[];
+};
+
+const DEFAULT_DONG_INPUT: SunStudyDongInput[] = [
+  { name: "101동", x: -86, z: -238, h: 78, floors: 26, kind: "why", face: 178 },
+  { name: "102동", x: -98, z: -128, h: 90, floors: 30, kind: "tee", face: 152 },
+  { name: "103동", x: -102, z: -16, h: 96, floors: 32, kind: "why", face: 172 },
+  { name: "104동", x: -96, z: 100, h: 84, floors: 28, kind: "tee", face: 150 },
+  { name: "105동", x: -78, z: 210, h: 72, floors: 24, kind: "why", face: 180 },
+  { name: "106동", x: 8, z: 258, h: 80, floors: 26, kind: "tee", face: 186 },
+  { name: "107동", x: 82, z: 202, h: 66, floors: 22, kind: "why", face: 212 },
+  { name: "108동", x: 100, z: 94, h: 75, floors: 25, kind: "tee", face: 208 },
+  { name: "109동", x: 102, z: -20, h: 88, floors: 29, kind: "why", face: 190 },
+  { name: "110동", x: 94, z: -130, h: 81, floors: 27, kind: "tee", face: 205 },
+  { name: "111동", x: 76, z: -236, h: 74, floors: 24, kind: "why", face: 176 },
+  { name: "112동", x: -6, z: -268, h: 70, floors: 23, kind: "tee", face: 182 },
+];
+
+function buildDongs(inputs: SunStudyDongInput[]): Mass[] {
+  return inputs.map((d) => {
+    const yaw = yawForFacing(d.face);
+    return {
+      name: d.name,
+      x: d.x,
+      z: d.z,
+      h: d.h * HEIGHT_GAIN,
+      floors: Math.round(d.floors * HEIGHT_GAIN),
+      kind: d.kind,
+      yaw,
+      facing: `${compassPoint(facingAzimuth(yaw))}향`,
+    };
+  });
+}
 
 function clamp(n: number, a: number, b: number) {
   return Math.max(a, Math.min(b, n));
@@ -118,12 +136,12 @@ function equationOfTime(dayOfYear: number) {
  * Azimuth is measured clockwise from true north, matching the scene where
  * -Z is north and +X is east.
  */
-function sunPosition(clockHour: number) {
+function sunPosition(clockHour: number, siteLatitude = DEFAULT_SITE_LATITUDE, siteLongitude = DEFAULT_SITE_LONGITUDE) {
   const declination = solarDeclination(WINTER_SOLSTICE_DAY);
-  const minutesFromStandard = 4 * (SITE_LONGITUDE - STANDARD_MERIDIAN) + equationOfTime(WINTER_SOLSTICE_DAY);
+  const minutesFromStandard = 4 * (siteLongitude - STANDARD_MERIDIAN) + equationOfTime(WINTER_SOLSTICE_DAY);
   const solarHour = clockHour + minutesFromStandard / 60;
   const hourAngle = toRad(15 * (solarHour - 12));
-  const latitude = toRad(SITE_LATITUDE);
+  const latitude = toRad(siteLatitude);
 
   const sinAltitude = clamp(
     Math.sin(latitude) * Math.sin(declination) +
@@ -168,7 +186,7 @@ function seeded(seed: number) {
   };
 }
 
-export function PlSunStudy() {
+export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
   const rootRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const timeRef = useRef<HTMLSpanElement>(null);
@@ -181,6 +199,12 @@ export function PlSunStudy() {
   const orbitRef = useRef({ theta: 1.12, phi: 0.38, radius: 880 });
   const [playing, setPlaying] = useState(true);
   const [full, setFull] = useState(false);
+  const siteLatitude = config?.latitude ?? DEFAULT_SITE_LATITUDE;
+  const siteLongitude = config?.longitude ?? DEFAULT_SITE_LONGITUDE;
+  const dongs = useMemo(
+    () => buildDongs(config?.dongs?.length ? config.dongs : DEFAULT_DONG_INPUT),
+    [config?.dongs],
+  );
 
   useEffect(() => {
     const html = document.documentElement;
@@ -741,8 +765,8 @@ export function PlSunStudy() {
         [0, 206],
       ].forEach(([lx, lz]) => addLamp(lx, lz));
 
-      DONGS.forEach((dong, i) => {
-        const next = DONGS[(i + 1) % DONGS.length];
+      dongs.forEach((dong, i) => {
+        const next = dongs[(i + 1) % dongs.length];
         const mx = (dong.x + next.x) * 0.5;
         const mz = (dong.z + next.z) * 0.5;
         addTree(mx, mz, 1.05 + rnd() * 0.35, rnd() > 0.5 ? "broadleaf" : "conifer");
@@ -1008,7 +1032,7 @@ export function PlSunStudy() {
         scene.add(root);
       };
 
-      DONGS.forEach(addDong);
+      dongs.forEach(addDong);
 
       const amenityLabel = makeLabel("커뮤니티", { height: 11 });
       if (amenityLabel) {
@@ -1031,7 +1055,7 @@ export function PlSunStudy() {
 
       let duskApplied: boolean | null = null;
       const applySun = (t: number) => {
-        const { altitude, azimuth } = sunPosition(hourFromT(t));
+        const { altitude, azimuth } = sunPosition(hourFromT(t), siteLatitude, siteLongitude);
         const horizontal = Math.cos(altitude);
         const dirX = Math.sin(azimuth) * horizontal;
         const dirY = Math.sin(altitude);
@@ -1177,7 +1201,7 @@ export function PlSunStudy() {
       cancelAnimationFrame(raf);
       cleanupInner?.();
     };
-  }, []);
+  }, [dongs, siteLatitude, siteLongitude]);
 
   return (
     <div

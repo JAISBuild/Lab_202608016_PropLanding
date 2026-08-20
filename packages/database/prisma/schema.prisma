@@ -17,12 +17,13 @@ model Organization {
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  campaigns    Campaign[]
-  mediaAssets  MediaAsset[]
-  staffMembers StaffMember[]
-  adminUsers   AdminUser[]
-  inquiries    Inquiry[]
-  legalNotices LegalNotice[]
+  campaigns         Campaign[]
+  mediaAssets       MediaAsset[]
+  staffMembers      StaffMember[]
+  adminUsers        AdminUser[]
+  inquiries         Inquiry[]
+  legalNotices      LegalNotice[]
+  messageDeliveries MessageDelivery[]
 
   @@map("organizations")
 }
@@ -252,12 +253,13 @@ model Inquiry {
   visitorSession VisitorSession? @relation(fields: [visitorSessionId], references: [id])
   assignedStaff  StaffMember?   @relation(fields: [assignedStaffId], references: [id])
   interestedUnit UnitType?      @relation(fields: [interestedUnitTypeId], references: [id])
-  events         InquiryEvent[]
-  consents       InquiryConsent[]
-  consultations  Consultation[]
-  appointments   Appointment[]
-  assignments    InquiryAssignment[]
-  analyticsEvents AnalyticsEvent[]
+  events            InquiryEvent[]
+  consents          InquiryConsent[]
+  consultations     Consultation[]
+  appointments      Appointment[]
+  assignments       InquiryAssignment[]
+  analyticsEvents   AnalyticsEvent[]
+  messageDeliveries MessageDelivery[]
 
   @@index([campaignId, status, createdAt(sort: Desc)])
   @@map("inquiries")
@@ -309,9 +311,55 @@ model Appointment {
   note        String?
   createdAt   DateTime @default(now()) @map("created_at")
 
-  inquiry Inquiry @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  inquiry           Inquiry            @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  messageDeliveries MessageDelivery[]
 
   @@map("appointments")
+}
+
+/// 고객 안내 발송(카카오 채널·문자 등) 1건
+model MessageDelivery {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  inquiryId      String?   @map("inquiry_id")
+  appointmentId  String?   @map("appointment_id")
+  channel        String // sms | kakao_alimtalk | kakao_channel
+  methodLabel    String    @map("method_label") // 관리자 화면 표시용 (예: 문자 SMS)
+  templateKey    String?   @map("template_key")
+  recipient      String
+  subject        String?
+  body           String // 발송 본문 전문(관리자 조회용)
+  status         String    @default("pending") // pending | sent | failed | skipped
+  provider       String?
+  providerMsgId  String?   @map("provider_msg_id")
+  errorMessage   String?   @map("error_message")
+  payload        Json?
+  sentAt         DateTime? @map("sent_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization Organization      @relation(fields: [organizationId], references: [id])
+  inquiry      Inquiry?          @relation(fields: [inquiryId], references: [id], onDelete: SetNull)
+  appointment  Appointment?      @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  logs         NotificationLog[]
+
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([inquiryId, channel])
+  @@index([status, createdAt(sort: Desc)])
+  @@map("message_deliveries")
+}
+
+model NotificationLog {
+  id                String   @id @default(cuid())
+  messageDeliveryId String   @map("message_delivery_id")
+  event             String // queued | attempt | sent | failed | skipped | webhook
+  detail            Json?
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  delivery MessageDelivery @relation(fields: [messageDeliveryId], references: [id], onDelete: Cascade)
+
+  @@index([messageDeliveryId, createdAt])
+  @@map("notification_logs")
 }
 
 model AssignmentRule {

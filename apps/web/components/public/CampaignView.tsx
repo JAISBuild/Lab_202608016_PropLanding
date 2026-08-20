@@ -71,6 +71,8 @@ export function CampaignView({ campaign, slug }: CampaignViewProps) {
   const gallery = campaign.blocks.find((b) => b.type === "gallery");
   const video = campaign.blocks.find((b) => b.type === "video");
   const benefit = campaign.blocks.find((b) => b.type === "raw_text");
+  const lifestyle = campaign.blocks.find((b) => b.type === "lifestyle");
+  const faq = campaign.blocks.find((b) => b.type === "faq");
 
   return (
     <div className="pl-campaign">
@@ -112,7 +114,7 @@ export function CampaignView({ campaign, slug }: CampaignViewProps) {
           }
         />
       ) : null}
-      <PlLifestyle />
+      <PlLifestyle payload={lifestyle?.payload as import("./PlLifestyle").LifestylePayload | undefined} />
       {video ? (
         <PlVideoBlock
           title={video.payload.title ? String(video.payload.title) : undefined}
@@ -141,7 +143,10 @@ export function CampaignView({ campaign, slug }: CampaignViewProps) {
         phone={campaign.contactPhone}
         onSubmit={handleInquiry}
       />
-      <PlFaq />
+      <PlFaq
+        headline={faq?.payload.headline ? String(faq.payload.headline) : undefined}
+        items={(faq?.payload.items as { q: string; a: string }[] | undefined) ?? undefined}
+      />
       <PlSiteFooter title={campaign.title} phone={campaign.contactPhone} />
       <PlStickyCta
         phone={campaign.contactPhone}

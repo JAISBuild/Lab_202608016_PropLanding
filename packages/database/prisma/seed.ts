@@ -89,6 +89,71 @@ async function main() {
           body: "계약금 10% · 중도금 무이자 · 4대 Appliance 제공",
         },
       },
+      {
+        campaignId: campaign.id,
+        type: "faq",
+        sortOrder: 4,
+        payload: {
+          headline: "알고 싶은 것부터 확인하세요.",
+          items: [
+            {
+              q: "방문 상담은 얼마나 걸리나요?",
+              a: "보통 30–40분입니다. 관심 타입을 미리 고르시면 평면과 동선을 중심으로 더 편하게 안내합니다.",
+            },
+            {
+              q: "계약금·중도금은 어떻게 되나요?",
+              a: "캠페인마다 조건이 다릅니다. 상담 시 현재 적용 중인 계약금 비율과 중도금 일정을 명확히 말씀드립니다.",
+            },
+            {
+              q: "관심 타입은 나중에 바꿔도 되나요?",
+              a: "가능합니다. 예약 단계에서 고른 타입은 상담 우선순위일 뿐, 계약 전까지 언제든 다시 비교할 수 있습니다.",
+            },
+            {
+              q: "개인정보는 어디에 쓰이나요?",
+              a: "방문 안내와 상담 연락에만 사용합니다. 필수 동의 내용을 펼쳐 확인한 뒤 제출해 주세요.",
+            },
+          ],
+        },
+      },
+      {
+        campaignId: campaign.id,
+        type: "lifestyle",
+        sortOrder: 5,
+        payload: {
+          headline: "하루를 바꾸는 작은 설계.",
+          lightTitle: "빛이 머무는 집의 방향.",
+          lightBody:
+            "동지일 기준, 해가 동에서 서로 지며 각 동과 단지 바닥에 그림자가 집니다. 전체화면에서 동서·남북 각도를 바꿔 일조권과 비일조권을 동별로 비교하세요.",
+          smartTitle: "집 안과 지하가 한 화면.",
+          smartBody:
+            "월패드로 조명·환기·난방을 보고, 지하에서는 빈 자리와 전기차 충전을 안내합니다.",
+          commonTitle: "함께여서 더 편안한 공용부.",
+          commonBody: "이웃과 머무는 생활공간, 라운지, 작은 도서관 — 시설이 아니라 하루의 공용부입니다.",
+          spaces: [
+            { url: "/images/life-living.jpg", caption: "생활공간" },
+            { url: "/images/life-lounge.jpg", caption: "라운지" },
+            { url: "/images/life-library.jpg", caption: "작은도서관" },
+          ],
+          sunStudy: {
+            latitude: 37.5665,
+            longitude: 126.978,
+            dongs: [
+              { name: "101동", x: -86, z: -238, h: 78, floors: 26, kind: "why", face: 178 },
+              { name: "102동", x: -98, z: -128, h: 90, floors: 30, kind: "tee", face: 152 },
+              { name: "103동", x: -102, z: -16, h: 96, floors: 32, kind: "why", face: 172 },
+              { name: "104동", x: -96, z: 100, h: 84, floors: 28, kind: "tee", face: 150 },
+              { name: "105동", x: -78, z: 210, h: 72, floors: 24, kind: "why", face: 180 },
+              { name: "106동", x: 8, z: 258, h: 80, floors: 26, kind: "tee", face: 186 },
+              { name: "107동", x: 82, z: 202, h: 66, floors: 22, kind: "why", face: 212 },
+              { name: "108동", x: 100, z: 94, h: 75, floors: 25, kind: "tee", face: 208 },
+              { name: "109동", x: 102, z: -20, h: 88, floors: 29, kind: "why", face: 190 },
+              { name: "110동", x: 94, z: -130, h: 81, floors: 27, kind: "tee", face: 205 },
+              { name: "111동", x: 76, z: -236, h: 74, floors: 24, kind: "why", face: 176 },
+              { name: "112동", x: -6, z: -268, h: 70, floors: 23, kind: "tee", face: 182 },
+            ],
+          },
+        },
+      },
     ],
   });
 

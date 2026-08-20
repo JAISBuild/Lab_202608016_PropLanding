@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 import { prisma } from "@proplanding/database";
+import { getMessageDeliveryStats } from "./messaging";
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET ?? "dev-secret-change-in-production",
@@ -64,18 +65,29 @@ export async function verifyToken(token: string): Promise<AuthPayload | null> {
 }
 
 export async function getDashboardStats(orgId: string) {
-  const [campaignCount, inquiryCount, newInquiries, appointments] = await Promise.all([
-    prisma.campaign.count({ where: { organizationId: orgId, deletedAt: null } }),
-    prisma.inquiry.count({ where: { organizationId: orgId } }),
-    prisma.inquiry.count({ where: { organizationId: orgId, status: "new" } }),
-    prisma.appointment.count({
-      where: {
-        inquiry: { organizationId: orgId },
-        scheduledAt: { gte: new Date() },
-        status: "scheduled",
-      },
-    }),
-  ]);
+  const [campaignCount, inquiryCount, newInquiries, appointments, messageStats] =
+    await Promise.all([
+      prisma.campaign.count({ where: { organizationId: orgId, deletedAt: null } }),
+      prisma.inquiry.count({ where: { organizationId: orgId } }),
+      prisma.inquiry.count({ where: { organizationId: orgId, status: "new" } }),
+      prisma.appointment.count({
+        where: {
+          inquiry: { organizationId: orgId },
+          scheduledAt: { gte: new Date() },
+          status: { in: ["scheduled", "requested"] },
+        },
+      }),
+      getMessageDeliveryStats(orgId),
+    ]);
 
-  return { campaignCount, inquiryCount, newInquiries, upcomingAppointments: appointments };
+  return {
+    campaignCount,
+    inquiryCount,
+    newInquiries,
+    upcomingAppointments: appointments,
+    messagesSent: messageStats.sent,
+    messagesFailed: messageStats.failed,
+    messagesTotal: messageStats.total,
+    recentMessages: messageStats.recent,
+  };
 }

@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 
-const FAQS = [
+export type FaqItem = { q: string; a: string };
+
+const DEFAULT_FAQS: FaqItem[] = [
   {
     q: "방문 상담은 얼마나 걸리나요?",
     a: "보통 30–40분입니다. 관심 타입을 미리 고르시면 평면과 동선을 중심으로 더 편하게 안내합니다.",
@@ -21,7 +23,13 @@ const FAQS = [
   },
 ];
 
-export function PlFaq() {
+interface PlFaqProps {
+  headline?: string;
+  items?: FaqItem[];
+}
+
+export function PlFaq({ headline, items }: PlFaqProps) {
+  const faqs = items && items.length > 0 ? items : DEFAULT_FAQS;
   const [open, setOpen] = useState(0);
 
   return (
@@ -33,15 +41,23 @@ export function PlFaq() {
             QUESTIONS, ANSWERED
           </p>
           <h2 className="pl-display">
-            알고 싶은 것부터 <em>확인하세요.</em>
+            {headline ? (
+              <>
+                {headline}
+              </>
+            ) : (
+              <>
+                알고 싶은 것부터 <em>확인하세요.</em>
+              </>
+            )}
           </h2>
           <p>결정하기 전, 가장 많이 묻는 질문을 짧게 정리했습니다.</p>
         </div>
         <div className="pl-faq__list">
-          {FAQS.map((item, i) => {
+          {faqs.map((item, i) => {
             const expanded = open === i;
             return (
-              <div key={item.q} className={`pl-faq__item${expanded ? " is-open" : ""}`}>
+              <div key={`${item.q}-${i}`} className={`pl-faq__item${expanded ? " is-open" : ""}`}>
                 <button
                   type="button"
                   aria-expanded={expanded}

@@ -54,6 +54,10 @@ export async function getDashboard() {
     inquiryCount: number;
     newInquiries: number;
     upcomingAppointments: number;
+    messagesSent?: number;
+    messagesFailed?: number;
+    messagesTotal?: number;
+    recentMessages?: unknown[];
   }>("/api/v1/auth/dashboard");
 }
 
@@ -164,6 +168,27 @@ export async function updateInquiryStatus(id: string, status: string, note?: str
 
 export async function getAppointments() {
   return apiFetch<unknown[]>("/api/v1/auth/appointments");
+}
+
+export async function getMessages(inquiryId?: string) {
+  const qs = inquiryId ? `?inquiryId=${inquiryId}` : "";
+  return apiFetch<unknown[]>(`/api/v1/admin/messages${qs}`);
+}
+
+export async function updateCampaignUnitTypes(
+  id: string,
+  units: Array<{
+    code: string;
+    name: string;
+    areaSqm?: number | null;
+    specs?: Record<string, unknown> | null;
+    sortOrder?: number;
+  }>,
+) {
+  return apiFetch<Record<string, unknown>>(`/api/v1/campaigns/${id}/unit-types`, {
+    method: "PUT",
+    body: JSON.stringify({ units }),
+  });
 }
 
 export async function getReports() {

@@ -8,6 +8,7 @@ import {
   publishCampaign,
   updateCampaign,
   upsertSiteBlocks,
+  replaceUnitTypes,
 } from "../../services/campaigns";
 import { requireAuth } from "../../middleware/auth";
 import type { ApiEnv } from "../../types";
@@ -95,6 +96,31 @@ campaigns.put(
     const { blocks } = c.req.valid("json");
     await upsertSiteBlocks(campaign.id, blocks);
     const updated = await getCampaignById(auth.orgId, campaign.id);
+    return c.json({ data: updated });
+  },
+);
+
+campaigns.put(
+  "/:id/unit-types",
+  zValidator(
+    "json",
+    z.object({
+      units: z.array(
+        z.object({
+          code: z.string().min(1),
+          name: z.string().min(1),
+          areaSqm: z.number().nullable().optional(),
+          specs: z.record(z.unknown()).nullable().optional(),
+          sortOrder: z.number().optional(),
+        }),
+      ),
+    }),
+  ),
+  async (c) => {
+    const auth = c.get("auth");
+    const { units } = c.req.valid("json");
+    const updated = await replaceUnitTypes(auth.orgId, c.req.param("id"), units);
+    if (!updated) return c.json({ error: "Not found" }, 404);
     return c.json({ data: updated });
   },
 );

@@ -7,6 +7,7 @@ import {
   publishCampaign,
   updateCampaign,
   updateCampaignBlocks,
+  updateCampaignUnitTypes,
   type MediaAsset,
   type PublishResult,
 } from "@/lib/api";
@@ -19,7 +20,7 @@ type SiteBlock = {
   payload: Record<string, unknown>;
 };
 
-type Tab = "basic" | "hero" | "gallery" | "media" | "publish";
+type Tab = "basic" | "hero" | "gallery" | "video" | "faq" | "units" | "lifestyle" | "media" | "publish";
 
 const WEB_URL = process.env.NEXT_PUBLIC_WEB_URL ?? "http://localhost:3000";
 
@@ -54,11 +55,27 @@ export function CampaignEditor({ campaignId, initial, onUpdate }: CampaignEditor
   const blocks = getBlocks(campaign);
   const heroBlock = findBlock(blocks, "hero");
   const galleryBlock = findBlock(blocks, "gallery");
+  const videoBlock = findBlock(blocks, "video");
+  const faqBlock = findBlock(blocks, "faq");
+  const lifestyleBlock = findBlock(blocks, "lifestyle");
   const heroPayload = (heroBlock?.payload ?? {}) as Record<string, string | undefined>;
   const galleryPayload = (galleryBlock?.payload ?? {}) as {
     title?: string;
     images?: { url: string; alt: string }[];
   };
+  const videoPayload = (videoBlock?.payload ?? {}) as Record<string, string | undefined>;
+  const faqPayload = (faqBlock?.payload ?? {}) as {
+    headline?: string;
+    items?: { q: string; a: string }[];
+  };
+  const lifestylePayload = (lifestyleBlock?.payload ?? {}) as Record<string, unknown>;
+  const unitTypes = ((campaign.unitTypes as Array<{
+    code: string;
+    name: string;
+    areaSqm: number | null;
+    specs?: Record<string, unknown> | null;
+    sortOrder?: number;
+  }>) ?? []).slice().sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
   async function reload() {
     const updated = await getCampaign(campaignId);
@@ -149,6 +166,10 @@ export function CampaignEditor({ campaignId, initial, onUpdate }: CampaignEditor
     { id: "basic", label: "기본" },
     { id: "hero", label: "히어로" },
     { id: "gallery", label: "갤러리" },
+    { id: "video", label: "영상" },
+    { id: "faq", label: "FAQ" },
+    { id: "units", label: "유닛" },
+    { id: "lifestyle", label: "라이프·3D" },
     { id: "media", label: "미디어" },
     { id: "publish", label: "게시" },
   ];
@@ -286,6 +307,194 @@ export function CampaignEditor({ campaignId, initial, onUpdate }: CampaignEditor
         <section className="detail-section">
           <h2>미디어 라이브러리</h2>
           <MediaLibrary />
+        </section>
+      )}
+
+      {tab === "video" && (
+        <section className="detail-section">
+          <h2>홍보 영상</h2>
+          <form
+            className="admin-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const fd = new FormData(e.currentTarget);
+              void saveBlocks(
+                upsertBlock(blocks, "video", 2, {
+                  title: String(fd.get("title") ?? ""),
+                  videoUrl: String(fd.get("videoUrl") ?? ""),
+                  posterUrl: String(fd.get("posterUrl") ?? ""),
+                }),
+              );
+            }}
+          >
+            <label>
+              제목
+              <input name="title" defaultValue={videoPayload.title ?? ""} />
+            </label>
+            <label>
+              영상 URL
+              <input name="videoUrl" defaultValue={videoPayload.videoUrl ?? ""} />
+            </label>
+            <label>
+              포스터 이미지 URL
+              <input name="posterUrl" defaultValue={videoPayload.posterUrl ?? ""} />
+            </label>
+            <button type="submit" className="btn-primary" disabled={saving}>
+              {saving ? "저장 중…" : "저장"}
+            </button>
+          </form>
+        </section>
+      )}
+
+      {tab === "faq" && (
+        <section className="detail-section">
+          <h2>FAQ</h2>
+          <form
+            className="admin-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const fd = new FormData(e.currentTarget);
+              const raw = String(fd.get("itemsJson") ?? "[]");
+              let items: { q: string; a: string }[] = [];
+              try {
+                items = JSON.parse(raw) as { q: string; a: string }[];
+              } catch {
+                setMessage("FAQ JSON 형식이 올바르지 않습니다.");
+                return;
+              }
+              void saveBlocks(
+                upsertBlock(blocks, "faq", 4, {
+                  headline: String(fd.get("headline") ?? ""),
+                  items,
+                }),
+              );
+            }}
+          >
+            <label>
+              섹션 헤드라인
+              <input name="headline" defaultValue={faqPayload.headline ?? ""} />
+            </label>
+            <label>
+              항목 JSON (배열: q, a)
+              <textarea
+                name="itemsJson"
+                rows={14}
+                defaultValue={JSON.stringify(faqPayload.items ?? [], null, 2)}
+              />
+            </label>
+            <button type="submit" className="btn-primary" disabled={saving}>
+              {saving ? "저장 중…" : "저장"}
+            </button>
+          </form>
+        </section>
+      )}
+
+      {tab === "units" && (
+        <section className="detail-section">
+          <h2>유닛 타입</h2>
+          <form
+            className="admin-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              setSaving(true);
+              setMessage(null);
+              const fd = new FormData(e.currentTarget);
+              try {
+                const units = JSON.parse(String(fd.get("unitsJson") ?? "[]")) as Array<{
+                  code: string;
+                  name: string;
+                  areaSqm?: number | null;
+                  specs?: Record<string, unknown> | null;
+                  sortOrder?: number;
+                }>;
+                void updateCampaignUnitTypes(campaignId, units)
+                  .then(async () => {
+                    await reload();
+                    setMessage("유닛이 저장되었습니다.");
+                  })
+                  .catch((err) => setMessage(err instanceof Error ? err.message : "저장 실패"))
+                  .finally(() => setSaving(false));
+              } catch {
+                setSaving(false);
+                setMessage("유닛 JSON 형식이 올바르지 않습니다.");
+              }
+            }}
+          >
+            <label>
+              유닛 JSON (code, name, areaSqm, specs, sortOrder)
+              <textarea
+                name="unitsJson"
+                rows={16}
+                defaultValue={JSON.stringify(
+                  unitTypes.map((u) => ({
+                    code: u.code,
+                    name: u.name,
+                    areaSqm: u.areaSqm,
+                    specs: u.specs ?? null,
+                    sortOrder: u.sortOrder ?? 0,
+                  })),
+                  null,
+                  2,
+                )}
+              />
+            </label>
+            <button type="submit" className="btn-primary" disabled={saving}>
+              {saving ? "저장 중…" : "저장"}
+            </button>
+          </form>
+        </section>
+      )}
+
+      {tab === "lifestyle" && (
+        <section className="detail-section">
+          <h2>라이프스타일 · 3D 일조(남/북향)</h2>
+          <p className="lead">
+            카피·이미지·일조 위도/경도·동별 face(방위각°)를 JSON으로 수정합니다. face 180≈남향, 0≈북향.
+          </p>
+          <form
+            className="admin-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const fd = new FormData(e.currentTarget);
+              try {
+                const payload = JSON.parse(String(fd.get("lifestyleJson") ?? "{}")) as Record<
+                  string,
+                  unknown
+                >;
+                void saveBlocks(upsertBlock(blocks, "lifestyle", 5, payload));
+              } catch {
+                setMessage("라이프스타일 JSON 형식이 올바르지 않습니다.");
+              }
+            }}
+          >
+            <label>
+              lifestyle 블록 JSON
+              <textarea
+                name="lifestyleJson"
+                rows={22}
+                defaultValue={JSON.stringify(
+                  Object.keys(lifestylePayload).length
+                    ? lifestylePayload
+                    : {
+                        headline: "하루를 바꾸는 작은 설계.",
+                        lightTitle: "빛이 머무는 집의 방향.",
+                        lightBody: "",
+                        smartTitle: "집 안과 지하가 한 화면.",
+                        smartBody: "",
+                        commonTitle: "함께여서 더 편안한 공용부.",
+                        commonBody: "",
+                        spaces: [],
+                        sunStudy: { latitude: 37.5665, longitude: 126.978, dongs: [] },
+                      },
+                  null,
+                  2,
+                )}
+              />
+            </label>
+            <button type="submit" className="btn-primary" disabled={saving}>
+              {saving ? "저장 중…" : "저장"}
+            </button>
+          </form>
         </section>
       )}
 
