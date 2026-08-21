@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useHistoryLayer } from "@/lib/use-history-layer";
 
 type Kind = "why" | "tee";
 
@@ -203,6 +204,7 @@ export function PlSunStudy({
   const orbitRef = useRef({ theta: 1.12, phi: 0.38, radius: 880 });
   const [playing, setPlaying] = useState(true);
   const [full, setFull] = useState(false);
+  useHistoryLayer(full, () => setFull(false));
   const siteLatitude = config?.latitude ?? DEFAULT_SITE_LATITUDE;
   const siteLongitude = config?.longitude ?? DEFAULT_SITE_LONGITUDE;
   const dongs = useMemo(

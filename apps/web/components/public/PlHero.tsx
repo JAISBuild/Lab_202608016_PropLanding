@@ -1,3 +1,6 @@
+"use client";
+
+import { navigateLandingSection } from "@/lib/landing-scroll";
 import { PlMark } from "./PlMark";
 
 interface PlHeroProps {
@@ -44,10 +47,24 @@ export function PlHero({ headline, subheadline, imageUrl, brandName }: PlHeroPro
         </h1>
         {subheadline ? <p className="pl-hero__sub">{subheadline}</p> : null}
         <div className="pl-hero__actions">
-          <a href="#pl-section-inquiry" className="pl-btn-lime">
+          <a
+            href="#pl-section-inquiry"
+            className="pl-btn-lime"
+            onClick={(e) => {
+              e.preventDefault();
+              navigateLandingSection("pl-section-inquiry", true);
+            }}
+          >
             방문 상담 예약 <span aria-hidden>→</span>
           </a>
-          <a href="#pl-section-gallery" className="pl-btn-ghost">
+          <a
+            href="#pl-section-gallery"
+            className="pl-btn-ghost"
+            onClick={(e) => {
+              e.preventDefault();
+              navigateLandingSection("pl-section-gallery", true);
+            }}
+          >
             프로젝트 살펴보기 <span aria-hidden>↓</span>
           </a>
         </div>

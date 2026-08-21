@@ -5,10 +5,12 @@
 코딩 **이전**에 완료한 산출물과 의사결정, 저작권 개선, 8단계 코딩 계획을 한곳에 정리합니다.  
 ## 최근 구현 변경
 
-- [session-changelog-20260822.md](./session-changelog-20260822.md) — UI·네비·일조
+- [session-changelog-20260822.md](./session-changelog-20260822.md) — UI·네비·일조·뒤로가기/히스토리
 - [portfolio-public-link-guide.md](./portfolio-public-link-guide.md) — 포트폴리오 상시 URL 공개 방법
 
 로컬 전용(외주·공부, gitignore): `docs/private/`
+- `외주시사용_20260822-blueprint.md` — 당일 설계·검증·복붙 프롬프트
+- `공부용_20260822-landing-ui.md` — 해시/HistoryLayer 해설
 
 
 ## 1. 작업 범위 요약

@@ -79,3 +79,18 @@ export function scrollLandingToHash(hash: string, instant = false) {
   el.scrollIntoView({ behavior: "smooth", block: "start" });
   return true;
 }
+
+/**
+ * In-page section jump without stacking hash history.
+ * Uses replaceState so mouse/browser Back does not hop through 방문예약 → 입지 → …
+ */
+export function navigateLandingSection(sectionId: string, smooth = false) {
+  if (typeof window === "undefined") return false;
+  const id = sectionId.replace(/^#/, "");
+  if (!id) return false;
+  const ok = smooth ? scrollLandingToHash(id, false) : jumpToLandingSection(id);
+  if (!ok) return false;
+  const next = `${window.location.pathname}${window.location.search}#${id}`;
+  window.history.replaceState(window.history.state, "", next);
+  return true;
+}

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import type { PublicUnitType } from "@proplanding/shared";
 import { setLandingReturn } from "@/lib/landing-scroll";
+import { useHistoryLayer } from "@/lib/use-history-layer";
 
 interface PlUnitDetailProps {
   slug: string;
@@ -34,6 +35,7 @@ function planSrc(unit: PublicUnitType) {
 
 export function PlUnitDetail({ slug, unit }: PlUnitDetailProps) {
   const [zoomed, setZoomed] = useState(false);
+  useHistoryLayer(zoomed, () => setZoomed(false));
   const floorplan = planSrc(unit);
   const specEntries = unit.specs
     ? Object.entries(unit.specs).filter(([, v]) => v != null && String(v).length > 0)

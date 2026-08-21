@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { navigateLandingSection } from "@/lib/landing-scroll";
+import { useHistoryLayer } from "@/lib/use-history-layer";
 import { PlMark } from "./PlMark";
 
 interface GalleryImage {
@@ -17,6 +19,7 @@ interface PlGalleryProps {
 
 export function PlGallery({ title, images, onImageClick }: PlGalleryProps) {
   const [lightbox, setLightbox] = useState<number | null>(null);
+  useHistoryLayer(lightbox !== null, () => setLightbox(null));
   const featured = images[0];
   const rest = images.slice(1);
 
@@ -45,7 +48,14 @@ export function PlGallery({ title, images, onImageClick }: PlGalleryProps) {
           <p>
             단지의 바깥은 빠르게, 안은 천천히. 조감도로 전체 배치를 보고, 커뮤니티 시설과 조경을 이어서 확인하세요.
           </p>
-          <a href="#pl-section-units" className="pl-text-link">
+          <a
+            href="#pl-section-units"
+            className="pl-text-link"
+            onClick={(e) => {
+              e.preventDefault();
+              navigateLandingSection("pl-section-units", true);
+            }}
+          >
             내게 맞는 타입 찾기 →
           </a>
         </div>

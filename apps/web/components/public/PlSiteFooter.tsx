@@ -1,3 +1,7 @@
+"use client";
+
+import { navigateLandingSection } from "@/lib/landing-scroll";
+
 interface PlSiteFooterProps {
   title: string;
   phone?: string | null;
@@ -32,7 +36,14 @@ export function PlSiteFooter({ title, phone }: PlSiteFooterProps) {
               {phone}
             </a>
           ) : null}
-          <a href="#pl-section-hero" className="pl-text-link pl-text-link--lime">
+          <a
+            href="#pl-section-hero"
+            className="pl-text-link pl-text-link--lime"
+            onClick={(e) => {
+              e.preventDefault();
+              navigateLandingSection("pl-section-hero", true);
+            }}
+          >
             처음으로 돌아가기 ↑
           </a>
         </div>
