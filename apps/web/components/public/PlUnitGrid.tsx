@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { PublicUnitType } from "@proplanding/shared";
+import { saveLandingScroll } from "@/lib/landing-scroll";
 import { PlMark } from "./PlMark";
 
 interface PlUnitGridProps {
@@ -53,7 +54,10 @@ export function PlUnitGrid({ slug, units, onUnitClick }: PlUnitGridProps) {
                 <Link
                   href={`/c/${slug}/units/${unit.code}`}
                   className="pl-units__go"
-                  onClick={() => onUnitClick?.(unit.code)}
+                  onClick={() => {
+                    saveLandingScroll(slug);
+                    onUnitClick?.(unit.code);
+                  }}
                 >
                   <span>{selected ? "현재 선택된 타입" : "눌러서 자세히 비교하기"}</span>
                   <i aria-hidden>↗</i>

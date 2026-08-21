@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useLayoutEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { PublicCampaign } from "@proplanding/shared";
 import { PlHero } from "@/components/public/PlHero";
@@ -17,6 +17,7 @@ import { PlSiteHeader } from "@/components/public/PlSiteHeader";
 import { PlSiteFooter } from "@/components/public/PlSiteFooter";
 import { submitInquiry, trackEvent } from "@/lib/api";
 import { getSessionKey, getUtmParams } from "@/lib/session";
+import { consumeLandingReturn, jumpToLandingSection, readLandingScroll, saveLandingScroll } from "@/lib/landing-scroll";
 
 interface CampaignViewProps {
   campaign: PublicCampaign;
@@ -43,6 +44,63 @@ export function CampaignView({ campaign, slug }: CampaignViewProps) {
       sessionKey: key,
     });
   }, [campaign.id, sessionKey]);
+
+  useLayoutEffect(() => {
+    const returnId = consumeLandingReturn(slug);
+    const hash = window.location.hash.replace(/^#/, "");
+    const target = returnId || hash;
+
+    if (target) {
+      const apply = () => {
+        if (!jumpToLandingSection(target)) {
+          window.setTimeout(() => jumpToLandingSection(target), 50);
+        }
+      };
+      apply();
+      return;
+    }
+
+    const y = readLandingScroll(slug);
+    if (y == null || y <= 0) return;
+    const restore = () => {
+      const html = document.documentElement;
+      const prev = html.style.scrollBehavior;
+      html.style.scrollBehavior = "auto";
+      window.scrollTo(0, y);
+      requestAnimationFrame(() => {
+        html.style.scrollBehavior = prev;
+      });
+    };
+    restore();
+    const raf = requestAnimationFrame(restore);
+    const t = window.setTimeout(restore, 120);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(t);
+    };
+  }, [slug]);
+
+  useEffect(() => {
+    let ticking = false;
+    let ready = false;
+    const boot = window.setTimeout(() => {
+      ready = true;
+    }, 180);
+    const onScroll = () => {
+      if (!ready) return;
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        saveLandingScroll(slug);
+        ticking = false;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.clearTimeout(boot);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, [slug]);
 
   async function handleInquiry(data: {
     fullName: string;

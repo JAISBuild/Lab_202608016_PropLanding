@@ -44,15 +44,10 @@ export function PlLifestyle({ payload }: { payload?: LifestylePayload }) {
         </div>
         <div className="pl-life__grid">
           <article className="pl-life__wide">
-            <PlSunStudy config={payload?.sunStudy} />
-            <div className="pl-life__panel">
-              <p>01 / LIGHT & AIR</p>
-              <h3>{payload?.lightTitle ?? "빛이 머무는 집의 방향."}</h3>
-              <small>
-                {payload?.lightBody ??
-                  "동지일 기준, 해가 동에서 서로 지며 각 동과 단지 바닥에 그림자가 집니다. 전체화면에서 동서·남북 각도를 바꿔 일조권과 비일조권을 동별로 비교하세요."}
-              </small>
-            </div>
+            <PlSunStudy
+              config={payload?.sunStudy}
+              title={(payload?.lightTitle ?? "빛이 머무는 집의 방향").replace(/\.$/, "")}
+            />
           </article>
           <article className="pl-life__soft">
             <p>02 / SMART HOME</p>

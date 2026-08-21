@@ -19,7 +19,7 @@ export default async function ThanksPage({ params, searchParams }: PageProps) {
             : "방문 예약이 접수되었습니다."}
         </p>
         <div className="pl-thanks__actions">
-          <Link href={`/c/${slug}`} className="pl-btn-primary">
+          <Link href={`/c/${slug}`} scroll={false} className="pl-btn-primary">
             홈으로
           </Link>
           <a href="tel:15880000" className="pl-btn-secondary">

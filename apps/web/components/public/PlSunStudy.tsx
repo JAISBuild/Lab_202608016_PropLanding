@@ -186,14 +186,18 @@ function seeded(seed: number) {
   };
 }
 
-export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
+export function PlSunStudy({
+  config,
+  title = "빛이 머무는 집의 방향",
+}: {
+  config?: SunStudyConfig;
+  title?: string;
+} = {}) {
   const rootRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const timeRef = useRef<HTMLSpanElement>(null);
   const phaseRef = useRef<HTMLSpanElement>(null);
   const sliderRef = useRef<HTMLInputElement>(null);
-  const tiltRef = useRef<HTMLInputElement>(null);
-  const compassRef = useRef<HTMLDivElement>(null);
   const playingRef = useRef(true);
   const dayTRef = useRef(0.35);
   const orbitRef = useRef({ theta: 1.12, phi: 0.38, radius: 880 });
@@ -258,16 +262,6 @@ export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
           Math.cos(theta) * Math.sin(phi) * radius,
         );
         camera.lookAt(look);
-        if (compassRef.current) {
-          compassRef.current.style.transform = `rotate(${theta}rad)`;
-        }
-        if (tiltRef.current) {
-          if (document.activeElement !== tiltRef.current) {
-            tiltRef.current.value = String(phi);
-          }
-          const fill = ((phi - PHI_MIN) / (PHI_MAX - PHI_MIN)) * 100;
-          tiltRef.current.style.setProperty("--fill", `${fill.toFixed(2)}%`);
-        }
       };
       placeCamera();
 
@@ -337,11 +331,20 @@ export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
       const sand = new THREE.MeshLambertMaterial({ color: 0xd8b57a });
       const court = new THREE.MeshLambertMaterial({ color: 0x3f7d5e });
 
-      const site = new THREE.Mesh(new THREE.CircleGeometry(250, 72), grass);
+      // Rectangular landscaping flush to roads (east x≈150, south z≈294). Do not change roads/dongs/sun.
+      const siteW = 360;
+      const siteD = 634;
+      const site = new THREE.Mesh(new THREE.PlaneGeometry(siteW, siteD), grass);
       site.rotation.x = -Math.PI / 2;
-      site.scale.set(0.52, 1, 1.58);
+      site.position.set(-30, 0.02, -23);
       site.receiveShadow = true;
       scene.add(site);
+
+      const lawnInset = new THREE.Mesh(new THREE.PlaneGeometry(siteW - 18, siteD - 22), lawn);
+      lawnInset.rotation.x = -Math.PI / 2;
+      lawnInset.position.set(-30, 0.05, -23);
+      lawnInset.receiveShadow = true;
+      scene.add(lawnInset);
 
       const hill = shadowed(new THREE.Mesh(new THREE.BoxGeometry(240, 14, 90), forestFloor));
       hill.position.set(-20, 5, -330);
@@ -352,6 +355,17 @@ export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
       hillW.position.set(-168, 6, -20);
       hillW.rotation.z = 0.08;
       scene.add(hillW);
+
+      const edgeStripN = new THREE.Mesh(new THREE.PlaneGeometry(siteW, 36), forestFloor);
+      edgeStripN.rotation.x = -Math.PI / 2;
+      edgeStripN.position.set(-30, 0.06, -328);
+      edgeStripN.receiveShadow = true;
+      scene.add(edgeStripN);
+      const edgeStripW = new THREE.Mesh(new THREE.PlaneGeometry(42, siteD), forestFloor);
+      edgeStripW.rotation.x = -Math.PI / 2;
+      edgeStripW.position.set(-198, 0.06, -23);
+      edgeStripW.receiveShadow = true;
+      scene.add(edgeStripW);
 
       const centerLineMat = new THREE.MeshBasicMaterial({ color: 0xe8c33c });
       const laneMat = new THREE.MeshBasicMaterial({ color: 0xeef2f5 });
@@ -408,44 +422,38 @@ export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
         scene.add(bar);
       }
 
-      const dropoff = new THREE.Mesh(new THREE.CylinderGeometry(20, 20, 0.35, 40), pathMat);
-      dropoff.position.set(18, 0.2, 228);
-      dropoff.scale.set(1.4, 1, 0.65);
+      const dropoff = new THREE.Mesh(new THREE.CylinderGeometry(28, 28, 0.4, 40), pathMat);
+      dropoff.position.set(18, 0.22, 228);
+      dropoff.scale.set(1.55, 1, 0.72);
       dropoff.receiveShadow = true;
       scene.add(dropoff);
 
-      const lawnPad = new THREE.Mesh(new THREE.CylinderGeometry(42, 42, 0.28, 56), lawn);
-      lawnPad.position.set(4, 0.16, 6);
-      lawnPad.scale.set(0.48, 1, 1.85);
-      lawnPad.receiveShadow = true;
-      scene.add(lawnPad);
-
-      const pondA = new THREE.Mesh(new THREE.CircleGeometry(22, 40), water);
+      const pondA = new THREE.Mesh(new THREE.CircleGeometry(32, 48), water);
       pondA.rotation.x = -Math.PI / 2;
-      pondA.scale.set(0.85, 1, 1.55);
+      pondA.scale.set(0.9, 1, 1.45);
       pondA.position.set(4, 0.14, -62);
       pondA.receiveShadow = true;
       scene.add(pondA);
-      const pondB = new THREE.Mesh(new THREE.CircleGeometry(12, 32), water);
+      const pondB = new THREE.Mesh(new THREE.CircleGeometry(18, 36), water);
       pondB.rotation.x = -Math.PI / 2;
-      pondB.scale.set(0.9, 1, 1.35);
+      pondB.scale.set(0.95, 1, 1.3);
       pondB.position.set(-12, 0.15, -36);
       scene.add(pondB);
 
-      const ring = new THREE.Mesh(new THREE.RingGeometry(54, 62, 56), pathMat);
+      const ring = new THREE.Mesh(new THREE.RingGeometry(78, 92, 64), pathMat);
       ring.rotation.x = -Math.PI / 2;
       ring.position.y = 0.13;
-      ring.scale.set(0.46, 1, 1.82);
+      ring.scale.set(0.52, 1, 1.55);
       scene.add(ring);
 
       [
-        [0, 0, 48, 4.2, 0],
-        [0, 0, 4.2, 220, 0],
-        [18, -72, 36, 3.2, 0.12],
-        [-20, 64, 34, 3.2, -0.12],
-        [22, 110, 32, 3, 0.18],
+        [0, 0, 72, 6.2, 0],
+        [0, 0, 6.2, 280, 0],
+        [22, -72, 52, 4.4, 0.12],
+        [-24, 64, 48, 4.4, -0.12],
+        [26, 110, 46, 4.2, 0.18],
       ].forEach(([x, z, w, d, yaw]) => {
-        const walk = new THREE.Mesh(new THREE.BoxGeometry(w, 0.16, d), pathMat);
+        const walk = new THREE.Mesh(new THREE.BoxGeometry(w, 0.18, d), pathMat);
         walk.position.set(x, 0.12, z);
         walk.rotation.y = yaw;
         walk.receiveShadow = true;
@@ -496,6 +504,7 @@ export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
 
       const playground = new THREE.Group();
       playground.position.set(-34, 0, 92);
+      playground.scale.setScalar(1.85);
       scene.add(playground);
 
       part(playground, unitCyl, timber, 0, 0.22, 0, 30, 0.44, 30);
@@ -563,6 +572,7 @@ export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
 
       const sport = new THREE.Group();
       sport.position.set(-46, 0, 132);
+      sport.scale.setScalar(1.7);
       scene.add(sport);
       const courtPad = new THREE.Mesh(unitBox, court);
       courtPad.position.set(0, 0.18, 0);
@@ -589,6 +599,7 @@ export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
 
       const pavilion = new THREE.Group();
       pavilion.position.set(-10, 0, 8);
+      pavilion.scale.setScalar(1.65);
       const pavBase = shadowed(new THREE.Mesh(new THREE.BoxGeometry(16, 1.2, 16), stone));
       pavBase.position.y = 0.6;
       const pavPosts = [-5, 5].flatMap((px) =>
@@ -606,6 +617,7 @@ export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
 
       const amenity = new THREE.Group();
       amenity.position.set(6, 0, 148);
+      amenity.scale.setScalar(1.75);
       amenity.add(shadowed(new THREE.Mesh(new THREE.BoxGeometry(28, 1, 16), stone)));
       amenity.children[0].position.y = 0.5;
       const hall = shadowed(new THREE.Mesh(new THREE.BoxGeometry(24, 5.2, 12), glass));
@@ -698,6 +710,7 @@ export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
         const g = new THREE.Group();
         g.position.set(x, 0, z);
         g.rotation.y = yaw;
+        g.scale.setScalar(1.55);
         scene.add(g);
         part(g, unitBox, timber, 0, 1.15, 0, 5.4, 0.3, 1.6);
         part(g, unitBox, timber, 0, 1.9, -0.7, 5.4, 1.2, 0.28, [0.2, 0, 0]);
@@ -707,6 +720,7 @@ export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
       const addLamp = (x: number, z: number) => {
         const g = new THREE.Group();
         g.position.set(x, 0, z);
+        g.scale.setScalar(1.45);
         scene.add(g);
         part(g, unitCyl, lampMat, 0, 3.6, 0, 0.34, 7.2, 0.34);
         part(g, unitBox, lampMat, 0.7, 7.1, 0, 1.8, 0.28, 0.28);
@@ -716,35 +730,39 @@ export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
         g.add(bulb);
       };
 
-      const pondRim = new THREE.Mesh(new THREE.TorusGeometry(22, 1.1, 6, 40), stone);
+      const pondRim = new THREE.Mesh(new THREE.TorusGeometry(32, 1.4, 6, 48), stone);
       pondRim.rotation.x = -Math.PI / 2;
-      pondRim.position.set(4, 0.5, -62);
-      pondRim.scale.set(0.85, 1.55, 1);
+      pondRim.position.set(4, 0.55, -62);
+      pondRim.scale.set(0.9, 1.45, 1);
       pondRim.receiveShadow = true;
       scene.add(pondRim);
 
       const courtyardKinds: TreeKind[] = ["broadleaf", "broadleaf", "blossom", "conifer"];
-      for (let i = 0; i < 94; i += 1) {
+      for (let i = 0; i < 110; i += 1) {
         const a = rnd() * Math.PI * 2;
-        const r = 40 + rnd() * 80;
-        const tx = Math.cos(a) * r * 0.44;
-        const tz = Math.sin(a) * r * 1.6;
-        addTree(tx, tz, 0.7 + rnd() * 0.7, courtyardKinds[Math.floor(rnd() * courtyardKinds.length)]);
+        const r = 28 + rnd() * 120;
+        const tx = Math.cos(a) * r * 0.55;
+        const tz = Math.sin(a) * r * 1.55;
+        addTree(tx, tz, 1.35 + rnd() * 1.15, courtyardKinds[Math.floor(rnd() * courtyardKinds.length)]);
       }
-      for (let i = 0; i < 48; i += 1) {
+      for (let i = 0; i < 64; i += 1) {
         const a = rnd() * Math.PI * 2;
-        const r = 30 + rnd() * 92;
-        addTree(Math.cos(a) * r * 0.5, Math.sin(a) * r * 1.7, 0.5 + rnd() * 0.5, "shrub");
+        const r = 24 + rnd() * 130;
+        addTree(Math.cos(a) * r * 0.55, Math.sin(a) * r * 1.55, 0.95 + rnd() * 0.75, "shrub");
       }
 
       [
-        [-16, -104, 7, 11, 16],
-        [20, -96, 6, 9, 13],
-        [-22, 44, 6, 10, 14],
-        [24, 62, 7, 9, 14],
-        [-18, 150, 8, 11, 17],
-        [22, 172, 6, 9, 13],
-        [0, -160, 9, 12, 18],
+        [-16, -104, 11, 16, 22],
+        [20, -96, 10, 14, 20],
+        [-22, 44, 10, 15, 20],
+        [24, 62, 11, 14, 20],
+        [-18, 150, 12, 16, 24],
+        [22, 172, 10, 14, 20],
+        [0, -160, 14, 18, 26],
+        [-70, 0, 12, 14, 18],
+        [70, 20, 12, 14, 18],
+        [-50, -180, 10, 12, 16],
+        [55, 200, 10, 12, 16],
       ].forEach(([fx, fz, frx, frz, fn]) => addFlowerBed(fx, fz, frx, frz, fn));
 
       [
@@ -753,6 +771,8 @@ export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
         [-28, 70, 0.25],
         [30, 100, -0.3],
         [-24, 186, 0.2],
+        [40, -140, -0.2],
+        [-48, 160, 0.15],
       ].forEach(([bx, bz, byaw]) => addBench(bx, bz, byaw));
 
       [
@@ -763,27 +783,30 @@ export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
         [-34, 118],
         [34, 140],
         [0, 206],
+        [-80, -40],
+        [80, 60],
+        [-60, 220],
       ].forEach(([lx, lz]) => addLamp(lx, lz));
 
       dongs.forEach((dong, i) => {
         const next = dongs[(i + 1) % dongs.length];
         const mx = (dong.x + next.x) * 0.5;
         const mz = (dong.z + next.z) * 0.5;
-        addTree(mx, mz, 1.05 + rnd() * 0.35, rnd() > 0.5 ? "broadleaf" : "conifer");
-        addTree(mx + 7, mz - 5, 0.85 + rnd() * 0.3, "blossom");
-        addTree(mx - 6, mz + 6, 0.5 + rnd() * 0.35, "shrub");
+        addTree(mx, mz, 1.85 + rnd() * 0.55, rnd() > 0.5 ? "broadleaf" : "conifer");
+        addTree(mx + 7, mz - 5, 1.55 + rnd() * 0.4, "blossom");
+        addTree(mx - 6, mz + 6, 1.05 + rnd() * 0.45, "shrub");
       });
 
-      for (let i = 0; i < 68; i += 1) {
+      for (let i = 0; i < 80; i += 1) {
         const x = -160 + rnd() * 180;
         const z = -350 + rnd() * 70;
-        addTree(x, z, 1 + rnd() * 1.1, rnd() > 0.72 ? "conifer" : "broadleaf", 5);
+        addTree(x, z, 1.7 + rnd() * 1.35, rnd() > 0.72 ? "conifer" : "broadleaf", 5);
       }
-      for (let i = 0; i < 54; i += 1) {
+      for (let i = 0; i < 64; i += 1) {
         addTree(
           -175 - rnd() * 28,
           -220 + rnd() * 420,
-          1.1 + rnd() * 0.9,
+          1.8 + rnd() * 1.1,
           rnd() > 0.6 ? "conifer" : "broadleaf",
           6,
         );
@@ -845,51 +868,54 @@ export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
         return map;
       };
 
-      const LABEL_TONES = {
-        ink: { top: "#4a3c68", bottom: "#1d1530", edge: "rgba(255,255,255,0.34)", text: "#ffffff" },
-        lime: { top: "#e2fa7d", bottom: "#a9cf22", edge: "rgba(255,255,255,0.65)", text: "#1b1328" },
-        cream: { top: "#ffffff", bottom: "#ddd6c8", edge: "rgba(255,255,255,0.9)", text: "#1b1328" },
+      const PLAQUE = {
+        black: "#111111",
+        orange: "#f07820",
+        white: "#ffffff",
+        ink: "#111111",
+        muted: "#6b6b6b",
       } as const;
-
-      const roundedPath = (
-        ctx: CanvasRenderingContext2D,
-        x: number,
-        y: number,
-        w: number,
-        h: number,
-        r: number,
-      ) => {
-        ctx.beginPath();
-        ctx.moveTo(x + r, y);
-        ctx.lineTo(x + w - r, y);
-        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-        ctx.lineTo(x + w, y + h - r);
-        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-        ctx.lineTo(x + r, y + h);
-        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-        ctx.lineTo(x, y + r);
-        ctx.quadraticCurveTo(x, y, x + r, y);
-        ctx.closePath();
-      };
 
       const makeLabel = (
         text: string,
-        opts: { height?: number; tone?: keyof typeof LABEL_TONES } = {},
+        opts: {
+          height?: number;
+          /** Direction shown above the divider (e.g. 남향). */
+          direction?: string;
+          /** Facility / compact plaque at half height. */
+          facility?: boolean;
+        } = {},
       ) => {
-        const { height = LABEL_HEIGHT, tone = "ink" } = opts;
-        const palette = LABEL_TONES[tone];
-        const font = "800 64px Pretendard, 'Noto Sans KR', sans-serif";
-        const padX = 30;
-        const padY = 18;
+        const facility = opts.facility === true;
+        const direction = opts.direction?.trim() || "";
+        const split = Boolean(direction) && !facility;
+        const height = opts.height ?? (facility ? LABEL_HEIGHT * 0.45 : LABEL_HEIGHT * 0.9);
+
+        const topFont = split
+          ? "700 40px Pretendard, 'Noto Sans KR', sans-serif"
+          : "700 42px Pretendard, 'Noto Sans KR', sans-serif";
+        const bottomFont = "700 46px Pretendard, 'Noto Sans KR', sans-serif";
 
         const gauge = document.createElement("canvas").getContext("2d");
         if (!gauge) return null;
-        gauge.font = font;
-        const textWidth = Math.ceil(gauge.measureText(text).width);
+        gauge.font = topFont;
+        const topW = direction ? Math.ceil(gauge.measureText(direction).width) : 0;
+        gauge.font = bottomFont;
+        const bottomW = Math.ceil(gauge.measureText(text).width);
+        const contentW = Math.max(topW, bottomW, facility ? 120 : 160);
 
-        const boxW = textWidth + padX * 2;
-        const boxH = 64 + padY * 2;
-        const margin = 18;
+        const border = 12;
+        const inner = 3;
+        const padX = 28;
+        const padY = facility ? 16 : 18;
+        const rowGap = split ? 14 : 0;
+        const topRowH = split ? 40 : 0;
+        const bottomRowH = facility ? 42 : 46;
+        const whiteH = padY * 2 + topRowH + rowGap + bottomRowH + (split ? 2 : 0);
+        const whiteW = contentW + padX * 2;
+        const boxW = whiteW + (border + inner) * 2;
+        const boxH = whiteH + (border + inner) * 2;
+        const margin = 6;
 
         const canvas = document.createElement("canvas");
         canvas.width = boxW + margin * 2;
@@ -897,30 +923,49 @@ export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
         const ctx = canvas.getContext("2d");
         if (!ctx) return null;
 
-        const grad = ctx.createLinearGradient(0, margin, 0, margin + boxH);
-        grad.addColorStop(0, palette.top);
-        grad.addColorStop(1, palette.bottom);
+        const ox = margin;
+        const oy = margin;
+        const midY = oy + boxH / 2;
 
-        ctx.shadowColor = "rgba(12,8,24,0.5)";
-        ctx.shadowBlur = 16;
-        ctx.shadowOffsetY = 8;
-        ctx.fillStyle = grad;
-        roundedPath(ctx, margin, margin, boxW, boxH, boxH / 2.6);
-        ctx.fill();
+        // Two-tone outer frame (top black / bottom orange) — flat, no gradient.
+        ctx.fillStyle = PLAQUE.black;
+        ctx.fillRect(ox, oy, boxW, boxH / 2);
+        ctx.fillStyle = PLAQUE.orange;
+        ctx.fillRect(ox, midY, boxW, boxH / 2);
 
-        ctx.shadowColor = "transparent";
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetY = 0;
-        ctx.strokeStyle = palette.edge;
-        ctx.lineWidth = 3;
-        roundedPath(ctx, margin + 1.5, margin + 1.5, boxW - 3, boxH - 3, boxH / 2.6);
-        ctx.stroke();
+        // Thin black inner ring + white plate.
+        const ix = ox + border;
+        const iy = oy + border;
+        const iw = boxW - border * 2;
+        const ih = boxH - border * 2;
+        ctx.fillStyle = PLAQUE.black;
+        ctx.fillRect(ix, iy, iw, ih);
+        const wx = ix + inner;
+        const wy = iy + inner;
+        const ww = iw - inner * 2;
+        const wh = ih - inner * 2;
+        ctx.fillStyle = PLAQUE.white;
+        ctx.fillRect(wx, wy, ww, wh);
 
-        ctx.fillStyle = palette.text;
-        ctx.font = font;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(text, margin + boxW / 2, margin + boxH / 2 + 3);
+        const cx = wx + ww / 2;
+
+        if (split) {
+          const dividerY = wy + padY + topRowH + rowGap / 2;
+          ctx.fillStyle = PLAQUE.black;
+          ctx.fillRect(wx + padX * 0.45, dividerY, ww - padX * 0.9, 2);
+
+          ctx.fillStyle = PLAQUE.ink;
+          ctx.font = topFont;
+          ctx.fillText(direction, cx, wy + padY + topRowH / 2);
+          ctx.font = bottomFont;
+          ctx.fillText(text, cx, wy + padY + topRowH + rowGap + bottomRowH / 2 + 1);
+        } else {
+          ctx.fillStyle = PLAQUE.ink;
+          ctx.font = bottomFont;
+          ctx.fillText(text, cx, wy + wh / 2 + 1);
+        }
 
         const map = new THREE.CanvasTexture(canvas);
         map.colorSpace = THREE.SRGBColorSpace;
@@ -928,7 +973,7 @@ export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
         map.generateMipmaps = false;
         map.minFilter = THREE.LinearFilter;
         const sprite = new THREE.Sprite(
-          new THREE.SpriteMaterial({ map, transparent: true, depthTest: false }),
+          new THREE.SpriteMaterial({ map, transparent: true, depthTest: false, depthWrite: false }),
         );
         const unit = height / boxH;
         sprite.scale.set(canvas.width * unit, canvas.height * unit, 1);
@@ -1019,24 +1064,19 @@ export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
           addVolume(root, -15, 9, 22, 12, b.h * 0.96, Math.max(18, b.floors - 2));
           addVolume(root, 15, 9, 22, 12, b.h * 0.96, Math.max(18, b.floors - 2));
         }
-        const label = makeLabel(b.name);
+        const label = makeLabel(b.name, { direction: b.facing });
         if (label) {
-          label.position.set(b.x, b.h + 20, b.z);
+          label.position.set(b.x, b.h + 26, b.z);
           scene.add(label);
-        }
-        const facing = makeLabel(b.facing, { height: LABEL_HEIGHT * 0.85, tone: "lime" });
-        if (facing) {
-          facing.position.set(b.x, b.h + 48, b.z);
-          scene.add(facing);
         }
         scene.add(root);
       };
 
       dongs.forEach(addDong);
 
-      const amenityLabel = makeLabel("커뮤니티", { height: 11 });
+      const amenityLabel = makeLabel("커뮤니티", { facility: true });
       if (amenityLabel) {
-        amenityLabel.position.set(6, 16, 148);
+        amenityLabel.position.set(6, 22, 148);
         scene.add(amenityLabel);
       }
 
@@ -1047,9 +1087,9 @@ export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
         ["W 서", -214, 0],
       ];
       bearings.forEach(([text, bx, bz]) => {
-        const marker = makeLabel(text, { height: 17, tone: "cream" });
+        const marker = makeLabel(text, { facility: true });
         if (!marker) return;
-        marker.position.set(bx, 34, bz);
+        marker.position.set(bx, 16, bz);
         scene.add(marker);
       });
 
@@ -1211,99 +1251,99 @@ export function PlSunStudy({ config }: { config?: SunStudyConfig } = {}) {
       aria-label="서울 위도 기준 동지일 태양 궤도를 계산해 12개 동의 그림자를 재현한 3D 일조 시뮬레이션. 동서남북 방위와 동별 남향·남동향·남서향 표시를 함께 보여 줍니다. 좌우 드래그는 동서 회전, 상하 드래그는 남북 각도입니다."
     >
       <div ref={hostRef} className="pl-sunstudy__stage" />
-      <div className="pl-sunstudy__chrome">
-        <span className="pl-sunstudy__time">
-          <b>동지일 서울</b>
-          <span ref={timeRef}>10:48</span>
-          <em ref={phaseRef}>남 172° · 고도 28.5°</em>
-        </span>
-        <div className="pl-sunstudy__tools">
-          <div ref={compassRef} className="pl-sunstudy__compass" aria-hidden="true">
-            <span>N</span>
+      <div className="pl-sunstudy__ui">
+        <aside className="pl-sunstudy__rail" aria-label="일조 시뮬레이션 안내">
+          <div className="pl-sunstudy__rail-row">
+            <span className="pl-sunstudy__time">
+              <b>동지일 · 서울</b>
+              <span ref={timeRef}>10:48</span>
+              <em ref={phaseRef}>남 172° · 고도 28.5°</em>
+            </span>
+            <ul className="pl-sunstudy__legend">
+              <li>
+                <i className="pl-sunstudy__swatch pl-sunstudy__swatch--sun" />
+                일조면
+              </li>
+              <li>
+                <i className="pl-sunstudy__swatch pl-sunstudy__swatch--shade" />
+                그림자
+              </li>
+            </ul>
           </div>
-          <ul className="pl-sunstudy__legend">
-            <li>
-              <i className="pl-sunstudy__swatch pl-sunstudy__swatch--sun" />
-              일조면
-            </li>
-            <li>
-              <i className="pl-sunstudy__swatch pl-sunstudy__swatch--shade" />
-              그림자
-            </li>
-          </ul>
+          <p className="pl-sunstudy__hint">드래그로 회전 · 스크롤로 거리 · 북위 {siteLatitude.toFixed(2)}°</p>
+        </aside>
+        <div className="pl-sunstudy__dock">
+          <button
+            type="button"
+            className="pl-sunstudy__play"
+            aria-label={playing ? "일시정지" : "재생"}
+            onClick={() => {
+              playingRef.current = !playingRef.current;
+              setPlaying(playingRef.current);
+            }}
+          >
+            {playing ? (
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 5h3.2v14H7V5zm6.8 0H17v14h-3.2V5z" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 5.2v13.6L19 12 8 5.2z" />
+              </svg>
+            )}
+          </button>
+          <label className="pl-sunstudy__slider">
+            <span>08시</span>
+            <input
+              ref={sliderRef}
+              type="range"
+              min={0}
+              max={1}
+              step={0.002}
+              defaultValue={0.35}
+              aria-label="동지일 시각"
+              onPointerDown={() => {
+                playingRef.current = false;
+                setPlaying(false);
+              }}
+              onChange={(e) => {
+                dayTRef.current = Number(e.target.value);
+                e.currentTarget.style.setProperty("--fill", `${(Number(e.target.value) * 100).toFixed(2)}%`);
+              }}
+            />
+            <span>16시</span>
+          </label>
           <button
             type="button"
             className="pl-sunstudy__fs"
+            aria-label={full ? "전체화면 종료" : "전체화면"}
             aria-pressed={full}
+            title={full ? "전체화면 종료" : "전체화면"}
             onClick={() => setFull((v) => !v)}
           >
-            {full ? "닫기" : "전체화면"}
+            {full ? (
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M7 14H3v2h2v2h2v-4zm12 0v4h2v-2h2v-2h-4zM7 10V6H5v2H3v2h4zm12 0h4V8h-2V6h-2v4z"
+                  fill="currentColor"
+                />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M3 3h6v2H5v4H3V3zm12 0h6v6h-2V5h-4V3zM3 15h2v4h4v2H3v-6zm16 0h2v6h-6v-2h4v-4z"
+                  fill="currentColor"
+                />
+              </svg>
+            )}
           </button>
         </div>
+        <div className="pl-sunstudy__title" aria-hidden={full ? true : undefined}>
+          <span className="pl-sunstudy__title-frame">
+            <span className="pl-sunstudy__title-plate">{title}</span>
+          </span>
+        </div>
       </div>
-      <div className="pl-sunstudy__dock">
-        <button
-          type="button"
-          className="pl-sunstudy__play"
-          aria-label={playing ? "일시정지" : "재생"}
-          onClick={() => {
-            playingRef.current = !playingRef.current;
-            setPlaying(playingRef.current);
-          }}
-        >
-          {playing ? (
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M7 5h3.2v14H7V5zm6.8 0H17v14h-3.2V5z" />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M8 5.2v13.6L19 12 8 5.2z" />
-            </svg>
-          )}
-        </button>
-        <label className="pl-sunstudy__slider">
-          <span>08시</span>
-          <input
-            ref={sliderRef}
-            type="range"
-            min={0}
-            max={1}
-            step={0.002}
-            defaultValue={0.35}
-            aria-label="동지일 시각"
-            onPointerDown={() => {
-              playingRef.current = false;
-              setPlaying(false);
-            }}
-            onChange={(e) => {
-              dayTRef.current = Number(e.target.value);
-              e.currentTarget.style.setProperty("--fill", `${(Number(e.target.value) * 100).toFixed(2)}%`);
-            }}
-          />
-          <span>16시</span>
-        </label>
-        <label className="pl-sunstudy__tilt">
-          <span>남북</span>
-          <input
-            ref={tiltRef}
-            type="range"
-            min={PHI_MIN}
-            max={PHI_MAX}
-            step={0.01}
-            defaultValue={0.38}
-            aria-label="남북 카메라 각도"
-            onChange={(e) => {
-              const phi = Number(e.target.value);
-              orbitRef.current.phi = phi;
-              const fill = ((phi - PHI_MIN) / (PHI_MAX - PHI_MIN)) * 100;
-              e.currentTarget.style.setProperty("--fill", `${fill.toFixed(2)}%`);
-            }}
-          />
-        </label>
-      </div>
-      <p className="pl-sunstudy__hint">
-        좌우 드래그 동서 · 상하 드래그 남북 · 스크롤 거리 — 북위 37.57° 동지일 실제 태양 궤도 기준
-      </p>
     </div>
   );
 }

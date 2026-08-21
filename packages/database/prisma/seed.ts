@@ -76,7 +76,7 @@ async function main() {
         sortOrder: 2,
         payload: {
           title: "주거 홍보 영상",
-          videoUrl: "/videos/promo-living.mp4",
+          videoUrl: "/videos/promo-living.mp4?v=20260822",
           posterUrl: "/images/life-light.jpg",
         },
       },
@@ -121,9 +121,8 @@ async function main() {
         sortOrder: 5,
         payload: {
           headline: "하루를 바꾸는 작은 설계.",
-          lightTitle: "빛이 머무는 집의 방향.",
-          lightBody:
-            "동지일 기준, 해가 동에서 서로 지며 각 동과 단지 바닥에 그림자가 집니다. 전체화면에서 동서·남북 각도를 바꿔 일조권과 비일조권을 동별로 비교하세요.",
+          lightTitle: "빛이 머무는 집의 방향",
+          lightBody: "동지일 태양·그림자를 재현합니다. 전체화면에서 동별 일조를 비교하세요.",
           smartTitle: "집 안과 지하가 한 화면.",
           smartBody:
             "월패드로 조명·환기·난방을 보고, 지하에서는 빈 자리와 전기차 충전을 안내합니다.",

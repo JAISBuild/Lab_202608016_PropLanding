@@ -57,13 +57,13 @@ export function PlInquiryForm({ legalNotices, unitTypes, phone, onSubmit }: PlIn
   }
 
   return (
-    <section id="pl-section-inquiry" className="pl-consult">
+    <section className="pl-consult" aria-labelledby="pl-consult-heading">
       <div className="pl-consult__intro">
         <p className="pl-kicker pl-kicker--light">
           <span />
           START WITH A CONVERSATION
         </p>
-        <h2 className="pl-display">
+        <h2 id="pl-consult-heading" className="pl-display">
           나에게 맞는 결을 <PlMark>천천히 찾아보세요.</PlMark>
         </h2>
         <p>
@@ -74,7 +74,7 @@ export function PlInquiryForm({ legalNotices, unitTypes, phone, onSubmit }: PlIn
           {phone ? <li>{phone}</li> : null}
         </ul>
       </div>
-      <form className="pl-consult__card" onSubmit={handleSubmit}>
+      <form id="pl-section-inquiry" className="pl-consult__card" onSubmit={handleSubmit}>
         <div className="pl-consult__card-head">
           <span>VISIT RESERVATION</span>
           <span>01 — 04</span>

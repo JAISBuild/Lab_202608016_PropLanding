@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import type { PublicUnitType } from "@proplanding/shared";
+import { setLandingReturn } from "@/lib/landing-scroll";
 
 interface PlUnitDetailProps {
   slug: string;
@@ -38,9 +39,12 @@ export function PlUnitDetail({ slug, unit }: PlUnitDetailProps) {
     ? Object.entries(unit.specs).filter(([, v]) => v != null && String(v).length > 0)
     : [];
 
+  const goBackToUnits = () => setLandingReturn(slug, "pl-section-units");
+  const goToInquiry = () => setLandingReturn(slug, "pl-section-inquiry");
+
   return (
     <section className="pl-unit-detail">
-      <Link href={`/c/${slug}#pl-section-units`} className="pl-back">
+      <Link href={`/c/${slug}`} scroll={false} className="pl-back" onClick={goBackToUnits}>
         ← 타입 목록
       </Link>
       <div className={`pl-unit-detail__layout${floorplan ? " has-plan" : ""}`}>
@@ -59,11 +63,11 @@ export function PlUnitDetail({ slug, unit }: PlUnitDetailProps) {
             </ul>
           ) : null}
           <div className="pl-page__actions">
-            <Link href={`/c/${slug}#pl-section-inquiry`} className="pl-btn-primary">
+            <Link href={`/c/${slug}`} scroll={false} className="pl-btn-primary" onClick={goToInquiry}>
               상담 신청
             </Link>
-            <Link href={`/c/${slug}`} className="pl-btn-secondary">
-              랜딩으로
+            <Link href={`/c/${slug}`} scroll={false} className="pl-btn-secondary" onClick={goBackToUnits}>
+              돌아가기
             </Link>
           </div>
         </div>
@@ -87,14 +91,36 @@ export function PlUnitDetail({ slug, unit }: PlUnitDetailProps) {
         ) : null}
       </div>
       {zoomed && floorplan ? (
-        <div className="pl-lightbox" role="dialog" onClick={() => setZoomed(false)}>
-          <button type="button" className="pl-lightbox__close" onClick={() => setZoomed(false)}>
+        <div
+          className="pl-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${unit.name} 평면도 확대 보기`}
+          onClick={() => setZoomed(false)}
+        >
+          <button
+            type="button"
+            className="pl-lightbox__close"
+            aria-label="축소하여 닫기"
+            onClick={() => setZoomed(false)}
+          >
             ✕
           </button>
-          <div className="pl-lightbox__inner" onClick={(e) => e.stopPropagation()}>
-            <Image src={floorplan} alt={`${unit.name} 평면도 확대`} width={1536} height={1024} />
-            <p>{unit.name} · 확장형 평면도</p>
-          </div>
+          <button
+            type="button"
+            className="pl-lightbox__inner pl-lightbox__inner--plan"
+            onClick={() => setZoomed(false)}
+            aria-label="이미지 클릭하여 축소"
+          >
+            <Image
+              src={floorplan}
+              alt={`${unit.name} 평면도 확대`}
+              width={1536}
+              height={1024}
+              className="pl-lightbox__img"
+            />
+            <p>{unit.name} · 확장형 · 탭하여 축소</p>
+          </button>
         </div>
       ) : null}
     </section>
