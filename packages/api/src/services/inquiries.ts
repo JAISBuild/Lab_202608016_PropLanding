@@ -6,9 +6,10 @@ import {
   computeLeadScoreRules,
   summarizeConsultation,
 } from "./ai";
+import { sendInquiryWelcomeMessages } from "./messaging";
 
 export async function createInquiry(input: CreateInquiryInput) {
-  return prisma.$transaction(async (tx) => {
+  const inquiry = await prisma.$transaction(async (tx) => {
     let visitorSessionId: string | undefined;
     if (input.sessionKey) {
       const session = await tx.visitorSession.upsert({
@@ -26,7 +27,11 @@ export async function createInquiry(input: CreateInquiryInput) {
       where: { id: input.campaignId },
     });
 
-    const inquiry = await tx.inquiry.create({
+    const preferredVisitAt = input.preferredVisitAt
+      ? new Date(input.preferredVisitAt)
+      : undefined;
+
+    const created = await tx.inquiry.create({
       data: {
         organizationId: campaign.organizationId,
         campaignId: input.campaignId,
@@ -34,44 +39,68 @@ export async function createInquiry(input: CreateInquiryInput) {
         fullName: input.fullName,
         phone: input.phone,
         email: input.email,
-        preferredVisitAt: input.preferredVisitAt
-          ? new Date(input.preferredVisitAt)
-          : undefined,
+        preferredVisitAt,
         interestedUnitTypeId: input.interestedUnitTypeId,
         sourceSnapshot: input.sourceSnapshot as object | undefined,
-        status: "new",
+        status: preferredVisitAt ? "visit_scheduled" : "new",
       },
     });
 
     await tx.inquiryConsent.create({
       data: {
-        inquiryId: inquiry.id,
+        inquiryId: created.id,
         legalNoticeId: input.legalNoticeId,
       },
     });
 
     await tx.inquiryEvent.create({
       data: {
-        inquiryId: inquiry.id,
+        inquiryId: created.id,
         type: "created",
         payload: { source: "form_submit" },
       },
     });
 
+    if (preferredVisitAt) {
+      await tx.appointment.create({
+        data: {
+          inquiryId: created.id,
+          scheduledAt: preferredVisitAt,
+          status: "requested",
+          note: "고객 희망 방문 일시 (폼 신청)",
+        },
+      });
+      await tx.inquiryEvent.create({
+        data: {
+          inquiryId: created.id,
+          type: "appointment_requested",
+          payload: { scheduledAt: preferredVisitAt.toISOString() },
+        },
+      });
+    }
+
     await tx.analyticsEvent.create({
       data: {
         campaignId: input.campaignId,
         visitorSessionId,
-        inquiryId: inquiry.id,
+        inquiryId: created.id,
         eventName: "form_submit",
-        properties: { inquiryId: inquiry.id },
+        properties: { inquiryId: created.id },
       },
     });
 
-    await assignInquiryRoundRobin(tx, inquiry);
+    await assignInquiryRoundRobin(tx, created);
 
-    return inquiry;
+    return created;
   });
+
+  try {
+    await sendInquiryWelcomeMessages(inquiry.id);
+  } catch (err) {
+    console.error("[messaging] inquiry welcome failed", err);
+  }
+
+  return inquiry;
 }
 
 export async function listInquiries(orgId: string, filters?: { status?: string; campaignId?: string }) {
@@ -101,8 +130,12 @@ export async function getInquiry(orgId: string, id: string) {
       consents: { include: { legalNotice: true } },
       consultations: { orderBy: { createdAt: "desc" } },
       appointments: { orderBy: { scheduledAt: "asc" } },
-      analyticsEvents: { orderBy: { occurredAt: "desc" }, take: 20 },
+      analyticsEvents: { orderBy: { occurredAt: "desc" }, take: 50 },
       visitorSession: true,
+      messageDeliveries: {
+        orderBy: { createdAt: "desc" },
+        include: { logs: { orderBy: { createdAt: "asc" } } },
+      },
     },
   });
 }

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchPublicCampaign } from "@/lib/api";
 import { PlUnitDetail } from "@/components/public/PlUnitDetail";
@@ -18,14 +17,6 @@ export default async function UnitPage({ params }: PageProps) {
   return (
     <main className="pl-page">
       <PlUnitDetail slug={slug} unit={unit} />
-      <div className="pl-page__actions">
-        <Link href={`/c/${slug}#pl-section-inquiry`} className="pl-btn-primary">
-          상담 신청
-        </Link>
-        <Link href={`/c/${slug}`} className="pl-btn-secondary">
-          랜딩으로
-        </Link>
-      </div>
     </main>
   );
 }

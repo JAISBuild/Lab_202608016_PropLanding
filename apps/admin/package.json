@@ -4,7 +4,7 @@
   "private": true,
   "description": "PropLanding Control Tower admin app",
   "scripts": {
-    "dev": "next dev --port ${ADMIN_PORT:-3001}",
+    "dev": "next dev --hostname 0.0.0.0 --port ${ADMIN_PORT:-3001}",
     "build": "next build",
     "start": "next start --port ${ADMIN_PORT:-3001}",
     "lint": "next lint",

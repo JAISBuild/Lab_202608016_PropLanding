@@ -9,6 +9,7 @@ const nav = [
   { href: "/campaigns", label: "캠페인" },
   { href: "/inquiries", label: "문의" },
   { href: "/appointments", label: "예약" },
+  { href: "/messages", label: "발송" },
   { href: "/reports", label: "통계" },
   { href: "/status", label: "API" },
 ];

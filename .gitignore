@@ -16,7 +16,9 @@ build/
 
 # IDE
 .idea/
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
 *.swp
 
 # OS
@@ -41,3 +43,8 @@ packages/database/prisma/*.db-journal
 .vercel/
 uploads/
 backups/
+
+# 비공개 내부 자료 — 공개 저장소에 올리지 않는다
+docs/rebuild-playbook.md
+docs/rebuild-playbook-annotated.md
+docs/private/

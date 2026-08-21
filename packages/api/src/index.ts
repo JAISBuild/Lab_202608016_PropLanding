@@ -12,6 +12,7 @@ import inquiriesPublic from "./routes/v1/inquiries-public";
 import inquiriesAdmin from "./routes/v1/inquiries-admin";
 import analytics from "./routes/v1/analytics";
 import authRoutes from "./routes/v1/auth";
+import messages from "./routes/v1/messages";
 
 const app = new Hono<ApiEnv>();
 
@@ -61,6 +62,7 @@ v1.route("/media", media);
 v1.route("/inquiries", inquiriesPublic);
 v1.route("/campaigns", campaigns);
 v1.route("/admin/inquiries", inquiriesAdmin);
+v1.route("/admin/messages", messages);
 v1.route("/analytics", analytics);
 v1.route("/auth", authRoutes);
 

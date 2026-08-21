@@ -1,6 +1,15 @@
 import type { PublicCampaign } from "@proplanding/shared";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+function apiBase() {
+  const explicit = process.env.NEXT_PUBLIC_API_URL;
+  if (explicit) return explicit.replace(/\/$/, "");
+  if (typeof window === "undefined") {
+    return process.env.API_PUBLIC_URL ?? "http://127.0.0.1:4000";
+  }
+  return "";
+}
+
+const API_URL = apiBase();
 
 export async function fetchPublicCampaign(
   slug: string,
@@ -8,7 +17,7 @@ export async function fetchPublicCampaign(
 ): Promise<PublicCampaign | null> {
   const qs = preview ? `?preview=${encodeURIComponent(preview)}` : "";
   const res = await fetch(`${API_URL}/api/v1/public/campaigns/${slug}${qs}`, {
-    next: { revalidate: 60 },
+    cache: "no-store",
   });
   if (!res.ok) return null;
   const json = await res.json();

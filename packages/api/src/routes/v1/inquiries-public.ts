@@ -4,14 +4,8 @@ import { z } from "zod";
 import { prisma } from "@proplanding/database";
 import {
   createInquiry,
-  listInquiries,
-  getInquiry,
-  updateInquiryStatus,
-  addConsultation,
-  createAppointment,
   findDuplicateInquiries,
   computeLeadScore,
-  classifyInquiry,
 } from "../../services/inquiries";
 
 const inquiries = new Hono();

@@ -1,17 +1,23 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useLayoutEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { PublicCampaign } from "@proplanding/shared";
 import { PlHero } from "@/components/public/PlHero";
+import { PlRhythm } from "@/components/public/PlRhythm";
 import { PlGallery } from "@/components/public/PlGallery";
+import { PlLifestyle } from "@/components/public/PlLifestyle";
 import { PlVideoBlock } from "@/components/public/PlVideoBlock";
 import { PlUnitGrid } from "@/components/public/PlUnitGrid";
+import { PlFaq } from "@/components/public/PlFaq";
 import { PlStickyCta } from "@/components/public/PlStickyCta";
 import { PlInquiryForm } from "@/components/public/PlInquiryForm";
 import { PlReserveForm } from "@/components/public/PlReserveForm";
+import { PlSiteHeader } from "@/components/public/PlSiteHeader";
+import { PlSiteFooter } from "@/components/public/PlSiteFooter";
 import { submitInquiry, trackEvent } from "@/lib/api";
 import { getSessionKey, getUtmParams } from "@/lib/session";
+import { consumeLandingReturn, jumpToLandingSection, readLandingScroll, saveLandingScroll } from "@/lib/landing-scroll";
 
 interface CampaignViewProps {
   campaign: PublicCampaign;
@@ -21,7 +27,6 @@ interface CampaignViewProps {
 export function CampaignView({ campaign, slug }: CampaignViewProps) {
   const router = useRouter();
   const [modal, setModal] = useState<"reserve" | "register" | null>(null);
-
   const sessionKey = useCallback(() => getSessionKey(), []);
 
   useEffect(() => {
@@ -39,6 +44,63 @@ export function CampaignView({ campaign, slug }: CampaignViewProps) {
       sessionKey: key,
     });
   }, [campaign.id, sessionKey]);
+
+  useLayoutEffect(() => {
+    const returnId = consumeLandingReturn(slug);
+    const hash = window.location.hash.replace(/^#/, "");
+    const target = returnId || hash;
+
+    if (target) {
+      const apply = () => {
+        if (!jumpToLandingSection(target)) {
+          window.setTimeout(() => jumpToLandingSection(target), 50);
+        }
+      };
+      apply();
+      return;
+    }
+
+    const y = readLandingScroll(slug);
+    if (y == null || y <= 0) return;
+    const restore = () => {
+      const html = document.documentElement;
+      const prev = html.style.scrollBehavior;
+      html.style.scrollBehavior = "auto";
+      window.scrollTo(0, y);
+      requestAnimationFrame(() => {
+        html.style.scrollBehavior = prev;
+      });
+    };
+    restore();
+    const raf = requestAnimationFrame(restore);
+    const t = window.setTimeout(restore, 120);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(t);
+    };
+  }, [slug]);
+
+  useEffect(() => {
+    let ticking = false;
+    let ready = false;
+    const boot = window.setTimeout(() => {
+      ready = true;
+    }, 180);
+    const onScroll = () => {
+      if (!ready) return;
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        saveLandingScroll(slug);
+        ticking = false;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.clearTimeout(boot);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, [slug]);
 
   async function handleInquiry(data: {
     fullName: string;
@@ -63,67 +125,40 @@ export function CampaignView({ campaign, slug }: CampaignViewProps) {
     router.push(`/c/${slug}/thanks?type=inquiry`);
   }
 
+  const hero = campaign.blocks.find((b) => b.type === "hero");
+  const gallery = campaign.blocks.find((b) => b.type === "gallery");
+  const video = campaign.blocks.find((b) => b.type === "video");
+  const benefit = campaign.blocks.find((b) => b.type === "raw_text");
+  const lifestyle = campaign.blocks.find((b) => b.type === "lifestyle");
+  const faq = campaign.blocks.find((b) => b.type === "faq");
+
   return (
     <div className="pl-campaign">
-      {campaign.blocks.map((block) => {
-        const p = block.payload;
-        switch (block.type) {
-          case "hero":
-            return (
-              <PlHero
-                key={block.id}
-                headline={String(p.headline ?? "")}
-                subheadline={p.subheadline ? String(p.subheadline) : undefined}
-                imageUrl={p.imageUrl ? String(p.imageUrl) : undefined}
-              />
-            );
-          case "gallery": {
-            const images = (p.images as { url: string; alt: string }[]) ?? [];
-            return (
-              <PlGallery
-                key={block.id}
-                title={p.title ? String(p.title) : undefined}
-                images={images}
-                onImageClick={() =>
-                  void trackEvent({
-                    campaignId: campaign.id,
-                    eventName: "cta_click",
-                    sessionKey: sessionKey(),
-                    properties: { action: "gallery_zoom" },
-                  })
-                }
-              />
-            );
+      <PlSiteHeader title={campaign.title} phone={campaign.contactPhone} />
+      {hero ? (
+        <PlHero
+          brandName={campaign.title}
+          headline={String(hero.payload.headline ?? "")}
+          subheadline={hero.payload.subheadline ? String(hero.payload.subheadline) : undefined}
+          imageUrl={hero.payload.imageUrl ? String(hero.payload.imageUrl) : undefined}
+        />
+      ) : null}
+      <PlRhythm />
+      {gallery ? (
+        <PlGallery
+          title={gallery.payload.title ? String(gallery.payload.title) : undefined}
+          images={(gallery.payload.images as { url: string; alt: string }[]) ?? []}
+          onImageClick={() =>
+            void trackEvent({
+              campaignId: campaign.id,
+              eventName: "cta_click",
+              sessionKey: sessionKey(),
+              properties: { action: "gallery_zoom" },
+            })
           }
-          case "video":
-            return (
-              <PlVideoBlock
-                key={block.id}
-                title={p.title ? String(p.title) : undefined}
-                videoUrl={String(p.videoUrl ?? "")}
-                posterUrl={p.posterUrl ? String(p.posterUrl) : undefined}
-                onPlay={() =>
-                  void trackEvent({
-                    campaignId: campaign.id,
-                    eventName: "media_play",
-                    sessionKey: sessionKey(),
-                  })
-                }
-              />
-            );
-          case "raw_text":
-            return (
-              <section key={block.id} className="pl-text-block">
-                {p.title ? <h2>{String(p.title)}</h2> : null}
-                <p>{String(p.body ?? "")}</p>
-              </section>
-            );
-          default:
-            return null;
-        }
-      })}
-
-      {campaign.unitTypes.length > 0 && (
+        />
+      ) : null}
+      {campaign.unitTypes.length > 0 ? (
         <PlUnitGrid
           slug={slug}
           units={campaign.unitTypes}
@@ -136,14 +171,41 @@ export function CampaignView({ campaign, slug }: CampaignViewProps) {
             })
           }
         />
-      )}
-
+      ) : null}
+      <PlLifestyle payload={lifestyle?.payload as import("./PlLifestyle").LifestylePayload | undefined} />
+      {video ? (
+        <PlVideoBlock
+          title={video.payload.title ? String(video.payload.title) : undefined}
+          videoUrl={String(video.payload.videoUrl ?? "")}
+          posterUrl={video.payload.posterUrl ? String(video.payload.posterUrl) : undefined}
+          onPlay={() =>
+            void trackEvent({
+              campaignId: campaign.id,
+              eventName: "media_play",
+              sessionKey: sessionKey(),
+            })
+          }
+        />
+      ) : null}
+      {benefit ? (
+        <section className="pl-benefits">
+          <div className="pl-container">
+            <p>{String(benefit.payload.title ?? "BENEFIT")}</p>
+            <strong>{String(benefit.payload.body ?? "")}</strong>
+          </div>
+        </section>
+      ) : null}
       <PlInquiryForm
         legalNotices={campaign.legalNotices}
-        unitTypes={campaign.unitTypes.map((u) => ({ id: u.id, name: u.name }))}
+        unitTypes={campaign.unitTypes.map((u) => ({ id: u.id, name: u.name, areaSqm: u.areaSqm }))}
+        phone={campaign.contactPhone}
         onSubmit={handleInquiry}
       />
-
+      <PlFaq
+        headline={faq?.payload.headline ? String(faq.payload.headline) : undefined}
+        items={(faq?.payload.items as { q: string; a: string }[] | undefined) ?? undefined}
+      />
+      <PlSiteFooter title={campaign.title} phone={campaign.contactPhone} />
       <PlStickyCta
         phone={campaign.contactPhone}
         onReserve={() => {
@@ -156,7 +218,6 @@ export function CampaignView({ campaign, slug }: CampaignViewProps) {
           });
         }}
         onRegister={() => {
-          setModal("register");
           document.getElementById("pl-section-inquiry")?.scrollIntoView({ behavior: "smooth" });
           void trackEvent({
             campaignId: campaign.id,
@@ -166,7 +227,6 @@ export function CampaignView({ campaign, slug }: CampaignViewProps) {
           });
         }}
       />
-
       {modal === "reserve" && (
         <div className="pl-modal" role="dialog">
           <div className="pl-modal__backdrop" onClick={() => setModal(null)} />

@@ -13,9 +13,11 @@ interface Inquiry {
   phone: string;
   status: string;
   leadScore: number;
+  preferredVisitAt?: string | null;
   createdAt: string;
   campaign?: { title: string; slug: string };
   assignedStaff?: { name: string };
+  interestedUnit?: { name: string; code: string } | null;
 }
 
 export default function InquiriesContent() {
@@ -57,6 +59,8 @@ export default function InquiriesContent() {
           <tr>
             <th>이름</th>
             <th>연락처</th>
+            <th>희망 일시</th>
+            <th>관심 타입</th>
             <th>캠페인</th>
             <th>상태</th>
             <th>스코어</th>
@@ -70,6 +74,18 @@ export default function InquiriesContent() {
                 <Link href={`/inquiries/${inq.id}`}>{inq.fullName}</Link>
               </td>
               <td>{inq.phone}</td>
+              <td>
+                {inq.preferredVisitAt
+                  ? new Date(inq.preferredVisitAt).toLocaleString("ko-KR", {
+                      timeZone: "Asia/Seoul",
+                      month: "numeric",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "—"}
+              </td>
+              <td>{inq.interestedUnit?.name ?? "—"}</td>
               <td>{inq.campaign?.title}</td>
               <td>
                 <span className={`badge badge-${inq.status}`}>{inq.status}</span>

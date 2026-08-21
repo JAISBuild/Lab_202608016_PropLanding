@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "editor-browser",
+      "request": "launch",
+      "name": "리버사이드 힐스 (에디터 오른쪽)",
+      "url": "http://localhost:3000/c/riverside"
+    },
+    {
+      "type": "editor-browser",
+      "request": "launch",
+      "name": "리버사이드 힐스 미리보기 포트",
+      "url": "http://localhost:3010/c/riverside"
+    }
+  ]
+}

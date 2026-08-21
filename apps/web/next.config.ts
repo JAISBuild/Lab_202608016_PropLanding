@@ -1,9 +1,23 @@
 import type { NextConfig } from "next";
 
+const API_ORIGIN = process.env.API_PUBLIC_URL ?? "http://127.0.0.1:4000";
+
 const nextConfig: NextConfig = {
   transpilePackages: ["@proplanding/shared"],
   poweredByHeader: false,
   compress: true,
+  allowedDevOrigins: ["*.trycloudflare.com", "localhost", "127.0.0.1"],
+  async redirects() {
+    return [{ source: "/", destination: "/c/riverside", permanent: false }];
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/api/v1/:path*",
+        destination: `${API_ORIGIN}/api/v1/:path*`,
+      },
+    ];
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],

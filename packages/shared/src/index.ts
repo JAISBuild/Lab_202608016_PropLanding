@@ -41,7 +41,29 @@ export type SiteBlockType =
   | "raw_text"
   | "cta"
   | "faq"
-  | "location";
+  | "location"
+  | "lifestyle";
+
+export type MessageChannel = "sms" | "kakao_alimtalk" | "kakao_channel";
+
+export type MessageDeliveryStatus = "pending" | "sent" | "failed" | "skipped";
+
+export interface MessageDeliveryView {
+  id: string;
+  channel: MessageChannel | string;
+  methodLabel: string;
+  recipient: string;
+  subject: string | null;
+  body: string;
+  status: MessageDeliveryStatus | string;
+  provider: string | null;
+  providerMsgId: string | null;
+  errorMessage: string | null;
+  sentAt: string | null;
+  createdAt: string;
+  inquiryId?: string | null;
+  inquiryName?: string | null;
+}
 
 export interface SiteBlockPayload {
   [key: string]: unknown;

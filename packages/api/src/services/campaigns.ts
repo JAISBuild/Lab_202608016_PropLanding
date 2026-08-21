@@ -173,3 +173,41 @@ export async function upsertSiteBlocks(
     })),
   });
 }
+
+export async function replaceUnitTypes(
+  orgId: string,
+  campaignId: string,
+  units: Array<{
+    code: string;
+    name: string;
+    areaSqm?: number | null;
+    specs?: object | null;
+    sortOrder?: number;
+  }>,
+) {
+  const campaign = await prisma.campaign.findFirst({
+    where: { id: campaignId, organizationId: orgId, deletedAt: null },
+  });
+  if (!campaign) return null;
+
+  await prisma.$transaction(async (tx) => {
+    const existing = await tx.unitType.findMany({ where: { campaignId } });
+    for (const ut of existing) {
+      await tx.unitTypeMedia.deleteMany({ where: { unitTypeId: ut.id } });
+    }
+    await tx.unitType.deleteMany({ where: { campaignId } });
+    if (units.length === 0) return;
+    await tx.unitType.createMany({
+      data: units.map((u, i) => ({
+        campaignId,
+        code: u.code,
+        name: u.name,
+        areaSqm: u.areaSqm ?? null,
+        specs: u.specs ?? undefined,
+        sortOrder: u.sortOrder ?? i,
+      })),
+    });
+  });
+
+  return getCampaignById(orgId, campaignId);
+}
