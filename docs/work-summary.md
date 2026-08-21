@@ -3,9 +3,13 @@
 > [문서 허브](./README.md) · 최종 업데이트: 2026-08-22 랜딩 UI·일조 세션
 
 코딩 **이전**에 완료한 산출물과 의사결정, 저작권 개선, 8단계 코딩 계획을 한곳에 정리합니다.  
-**최근 구현 변경:** [session-changelog-20260822.md](./session-changelog-20260822.md)
+## 최근 구현 변경
 
----
+- [session-changelog-20260822.md](./session-changelog-20260822.md) — UI·네비·일조
+- [portfolio-public-link-guide.md](./portfolio-public-link-guide.md) — 포트폴리오 상시 URL 공개 방법
+
+로컬 전용(외주·공부, gitignore): `docs/private/`
+
 
 ## 1. 작업 범위 요약
 

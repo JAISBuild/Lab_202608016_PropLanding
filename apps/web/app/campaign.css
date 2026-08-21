@@ -782,11 +782,10 @@ html.pl-sun-full .pl-header {
   right: var(--pl-sun-left);
   bottom: 1mm;
   z-index: 2;
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  grid-template-rows: auto auto auto;
-  gap: var(--pl-sun-gap);
+  display: flex;
+  flex-direction: column;
   align-items: stretch;
+  gap: var(--pl-sun-gap);
   pointer-events: none;
 }
 
@@ -794,9 +793,16 @@ html.pl-sun-full .pl-header {
   bottom: 1.2rem;
 }
 
+.pl-sunstudy__col {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--pl-sun-gap);
+  width: max-content;
+  max-width: 100%;
+}
+
 .pl-sunstudy__rail {
-  grid-column: 1;
-  grid-row: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -922,8 +928,6 @@ html.pl-sun-full .pl-header {
 }
 
 .pl-sunstudy__dock {
-  grid-column: 1 / -1;
-  grid-row: 2;
   position: relative;
   left: auto;
   right: auto;
@@ -932,8 +936,10 @@ html.pl-sun-full .pl-header {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
+  align-self: stretch;
   box-sizing: border-box;
   gap: 0.45rem;
+  width: 100%;
   height: var(--pl-sun-bar-h);
   min-height: var(--pl-sun-bar-h);
   padding: var(--pl-sun-pad) calc(var(--pl-sun-pad) + 4px);
@@ -1066,10 +1072,9 @@ html.pl-sun-full .pl-header {
 }
 
 .pl-sunstudy__title {
-  grid-column: 1;
-  grid-row: 3;
   box-sizing: border-box;
-  width: 100%;
+  width: 0;
+  min-width: 100%;
   pointer-events: none;
 }
 

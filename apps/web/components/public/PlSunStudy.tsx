@@ -1252,26 +1252,33 @@ export function PlSunStudy({
     >
       <div ref={hostRef} className="pl-sunstudy__stage" />
       <div className="pl-sunstudy__ui">
-        <aside className="pl-sunstudy__rail" aria-label="일조 시뮬레이션 안내">
-          <div className="pl-sunstudy__rail-row">
-            <span className="pl-sunstudy__time">
-              <b>동지일 · 서울</b>
-              <span ref={timeRef}>10:48</span>
-              <em ref={phaseRef}>남 172° · 고도 28.5°</em>
+        <div className="pl-sunstudy__col">
+          <div className="pl-sunstudy__title" aria-hidden={full ? true : undefined}>
+            <span className="pl-sunstudy__title-frame">
+              <span className="pl-sunstudy__title-plate">{title}</span>
             </span>
-            <ul className="pl-sunstudy__legend">
-              <li>
-                <i className="pl-sunstudy__swatch pl-sunstudy__swatch--sun" />
-                일조면
-              </li>
-              <li>
-                <i className="pl-sunstudy__swatch pl-sunstudy__swatch--shade" />
-                그림자
-              </li>
-            </ul>
           </div>
-          <p className="pl-sunstudy__hint">드래그로 회전 · 스크롤로 거리 · 북위 {siteLatitude.toFixed(2)}°</p>
-        </aside>
+          <aside className="pl-sunstudy__rail" aria-label="일조 시뮬레이션 안내">
+            <div className="pl-sunstudy__rail-row">
+              <span className="pl-sunstudy__time">
+                <b>동지일 · 서울</b>
+                <span ref={timeRef}>10:48</span>
+                <em ref={phaseRef}>남 172° · 고도 28.5°</em>
+              </span>
+              <ul className="pl-sunstudy__legend">
+                <li>
+                  <i className="pl-sunstudy__swatch pl-sunstudy__swatch--sun" />
+                  일조면
+                </li>
+                <li>
+                  <i className="pl-sunstudy__swatch pl-sunstudy__swatch--shade" />
+                  그림자
+                </li>
+              </ul>
+            </div>
+            <p className="pl-sunstudy__hint">드래그로 회전 · 스크롤로 거리 · 북위 {siteLatitude.toFixed(2)}°</p>
+          </aside>
+        </div>
         <div className="pl-sunstudy__dock">
           <button
             type="button"
@@ -1337,11 +1344,6 @@ export function PlSunStudy({
               </svg>
             )}
           </button>
-        </div>
-        <div className="pl-sunstudy__title" aria-hidden={full ? true : undefined}>
-          <span className="pl-sunstudy__title-frame">
-            <span className="pl-sunstudy__title-plate">{title}</span>
-          </span>
         </div>
       </div>
     </div>
